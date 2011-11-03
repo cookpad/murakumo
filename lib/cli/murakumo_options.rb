@@ -36,9 +36,6 @@ def parse_args
     desc 'port number of a name service'
     option :dns_port, '-p', '--port NUM', :type => Integer, :default => 53
 
-    desc 'port number of a gossip service'
-    option :gossip_port, '-P', '--gossip-port NUM', :type => Integer, :default => 10870
-
     desc 'path of a socket file'
     option :socket, '-S', '--socket SOCK', :default => '/var/tmp/murakumo.sock'
 
@@ -64,6 +61,18 @@ def parse_args
 
     desc 'path of the configuration file of a health check'
     option :health_check, '-H', '--health-check PATH'
+
+    desc 'port number of a gossip service'
+    option :gossip_port, nil, '--gossip-port NUM', :type => Integer, :default => 10870
+
+    desc 'lifetime of the node of a gossip protocol'
+    option :gossip_node_lifetime, nil, '--gossip-node-lifetime NUM', :type => Integer, :default => 10
+
+    desc 'transmitting interval of a gossip protocol'
+    option :gossip_interval, nil, '--gossip-interval NUM', :type => Float, :default => 0.1
+
+    desc 'reception timeout of a gossip protocol'
+    option :gossip_receive_timeout, nil, '--gossip-receive-timeout NUM', :type => Integer, :default => 3
 
     after do |options|
       record = options[:record]
