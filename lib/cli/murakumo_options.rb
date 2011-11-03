@@ -37,6 +37,11 @@ def parse_args
     desc 'port number of a name service'
     option :dns_port, '-p', '--port NUM', :type => Integer, :default => 53
 
+    desc 'initial node list of gossip protocols'
+    option :initial_nodes, '-i', '--initial-nodes IP_LIST', :type => Array, :default => [] do |value|
+      value.all? {|i| /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ i } or invalid_argument
+    end
+
     desc 'path of a socket file'
     option :socket, '-S', '--socket SOCK', :default => '/var/tmp/murakumo.sock'
 
@@ -78,7 +83,7 @@ def parse_args
     after do |options|
       # resource record
       record = options[:record]
-      [nil, nil, 300, 1, :MASTER].each_with_index {|v, i| record[i] ||= v }
+      [nil, nil, 60, 1, :MASTER].each_with_index {|v, i| record[i] ||= v }
       record[2] = record[2].to_i # TTL
       record[3] = record[3].to_i # Weight
       record[4] = record[4].to_s.upcase.to_sym # MASTER or BACKUP
