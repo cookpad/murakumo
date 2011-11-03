@@ -1,5 +1,6 @@
+require 'logger'
 require 'optopus'
-require 'socket'
+require 'resolv'
 
 Version = '0.1.0'
 
@@ -75,11 +76,21 @@ def parse_args
     option :gossip_receive_timeout, nil, '--gossip-receive-timeout NUM', :type => Integer, :default => 3
 
     after do |options|
+      # resource record
       record = options[:record]
       [nil, nil, 300, 1, :MASTER].each_with_index {|v, i| record[i] ||= v }
       record[2] = record[2].to_i # TTL
       record[3] = record[3].to_i # Weight
       record[4] = record[4].to_s.upcase.to_sym # MASTER or BACKUP
+
+      # resolver
+      if options[:resolver]
+        options[:resolver] = Resolv::DNS.new(:nameserver => options[:resolver])
+      end
+
+      # logger
+      options[:logger] = Logger.new(options[:log_path])
+      options[:logger].level = Logger.const_get(options[:log_level].to_s.upcase)
     end
 
     error do |e|
