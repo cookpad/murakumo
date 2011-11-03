@@ -30,7 +30,7 @@ def parse_args
     option :record, '-K', '--auth-key STRING', :required => true
 
     desc 'ip address to bind'
-    option :dns_port, '-a', '--address IP', :default => '0.0.0.0' do |value|
+    option :dns_address, '-a', '--address IP', :default => '0.0.0.0' do |value|
       /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ value or invalid_argument
     end
 

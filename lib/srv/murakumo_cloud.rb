@@ -1,7 +1,9 @@
+require 'forwardable'
 require 'rgossip2'
 require 'sqlite3'
 
 module Murakumo
+  extend Forwardable
 
   class Cloud
 
@@ -40,6 +42,9 @@ module Murakumo
       # XXX: ヘルスチェックの実装
     end
 
+    # Control of service
+    def_delegators :@gossip, :start, :stop
+
     def close
       # データベースをクローズ
       @db.close
@@ -64,6 +69,12 @@ module Murakumo
 
     # Search of records
 
+    def address_exist?(name)
+      @db.get_first_row(<<-EOS, name, 1).first.nonzero?
+        SELECT COUNT(*) FROM records WHERE name = ? AND activity = ?
+      EOS
+    end
+
     def lookup_addresses(name)
       records = []
 
@@ -81,7 +92,16 @@ module Murakumo
       return records
     end
 
+    def name_exist?(address)
+      address = x_ip_addr(address)
+
+      @db.get_first_row(<<-EOS, address, 1).first.nonzero?
+        SELECT COUNT(*) FROM records WHERE ip_address = ? AND activity = ?
+      EOS
+    end
+
     def lookup_name(address)
+      address = x_ip_addr(address)
       record = nil
 
       sql = <<-EOS
@@ -90,10 +110,10 @@ module Murakumo
       EOS
 
       # 優先度の高いアクティブなレコードを検索
-      record = @db.execute(sql, address, 1, 1).first
+      record = @db.get_first_row(sql, address, 1, 1)
 
       # レコードが見つからなかった場合は優先度の低いレコードを検索
-      record = @db.execute(sql, address, 0, 1).first unless record
+      record = @db.get_first_row(sql, address, 0, 1) unless record
 
       return record
     end
@@ -107,7 +127,7 @@ module Murakumo
 
       # リソースレコード用のテーブル
       # （Typeは必要？）
-      @db = db.execute(<<-EOS
+      @db.execute(<<-EOS)
         CREATE TABLE records (
           ip_address INTEGER PRIMARY KEY,
           , name     TEXT NOT NULL
@@ -118,7 +138,31 @@ module Murakumo
         )
       EOS
 
-      # XXX: インデックスの作成
+      # インデックスを作成（必要？）
+      @db.execute(<<-EOS)
+        CREATE INDEX idx_name_prio_act
+        ON records (name, priority, activity)
+      EOS
+
+      @db.execute(<<-EOS)
+        CREATE INDEX idx_name_act
+        ON records (name, activity)
+      EOS
+
+      @db.execute(<<-EOS)
+        CREATE INDEX idx_ip_prio_act
+        ON records (ip_address, priority, activity)
+      EOS
+
+      @db.execute(<<-EOS)
+        CREATE INDEX idx_ip_act
+        ON records (ip_address, activity)
+      EOS
+    end
+
+    # 逆引き名の変換
+    def x_ip_addr(name)
+      name.sub(/\.in-addr\.arpa\Z/, '').split('.').reverse.join('.')
     end
 
   end # Cloud
