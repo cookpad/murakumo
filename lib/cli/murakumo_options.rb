@@ -17,7 +17,9 @@ def parse_args
       /\A[0-9a-z\.\-]+\Z/ =~ hostname or invalid_argument
 
       # TTL
-      ttl.nil? or /\A\d+\Z/ =~ ttl or invalid_argument
+      unless ttl.nil? or (\A\d+\Z/ =~ ttl and ttl.to_i > 0)
+        invalid_argument
+      end
 
       # Weight
       weight.nil? or /\A\d+\Z/ =~ weight or invalid_argument
