@@ -2,6 +2,7 @@ require 'rgossip2'
 require 'sqlite3'
 
 module Murakumo
+
   class Cloud
 
     def initialize(options)
@@ -15,19 +16,19 @@ module Murakumo
 
       # ゴシップオブジェクトを生成
       @gossip = RGossip2.client({
-        :initial_nodes => options[:initial_nodes],
-        :address       => address,
-        :data          => data,
+        :initial_nodes   => options[:initial_nodes],
+        :address         => address,
+        :data            => data,
+        :auth_key        => options[:auth_key],
+        :port            => options[:gossip_port],
+        :node_lifetime   => options[:gossip_node_lifetime],
+        :gossip_interval => options[:gossip_send_interval],
+        :receive_timeout => options[:gossip_receive_timeout],
+        :logger          => options[:logger],
       })
 
-      @gossip.context.port = options[:gossip_port]
-      @gossip.context.node_lifetime = options[:gossip_node_lifetime]
-      @gossip.context.gossip_interval = options[:gossip_interval]
-      @gossip.context.receive_timeout = options[:gossip_receive_timeout]
-      @gossip.context.logger = options[:logger]
-
-      # ノードの更新をフックしてストレージを更新
-      @gossip.callback = lambda do |action, address, timestamp, data|
+      # ノードの更新をフック
+      @gossip.context.callback_handler = lambda do |action, address, timestamp, data|
         case action
         when :add, :comeback
           update(address, data)
@@ -37,9 +38,6 @@ module Murakumo
       end
 
       # XXX: ヘルスチェックの実装
-    end
-
-
     end
 
     def close
