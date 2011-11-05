@@ -2,6 +2,8 @@ require 'forwardable'
 require 'rgossip2'
 require 'sqlite3'
 
+require 'misc/murakumo_const'
+
 module Murakumo
   extend Forwardable
 
@@ -11,6 +13,7 @@ module Murakumo
       # リソースレコードからアドレスとデータを取り出す
       data = options[:record]
       address = data.shift
+      data[4] = ACTIVE # 最初はアクティブ
 
       # データベースを作成してレコードを更新
       create_database
@@ -53,69 +56,66 @@ module Murakumo
     # Operation of storage 
 
     def update(address, data)
-      name, ttl, weight, priority = data
-      priority = (priority == :MASTER) ? 1 : 0
-      activity = 1 # Active
-
-      @db.execute(<<-EOS, address, name, ttl, weight, priority, activity)
-        REPLACE INTO record (ip_address, name, ttl, weight, priority, activity)
+      @db.execute(<<-EOS, address, *data)
+        REPLACE INTO records (ip_address, name, ttl, weight, priority, activity)
         VALUES (?, ?, ?, ?, ?, ?)
       EOS
     end
 
     delete(address)
-      @db.execute('DELETE FROM record WHERE ip_address = ?', address)
+      @db.execute('DELETE FROM records WHERE ip_address = ?', address)
     end
 
     # Search of records
 
     def address_exist?(name)
-      @db.get_first_row(<<-EOS, name, 1).first.nonzero?
-        SELECT COUNT(*) FROM records WHERE name = ? AND activity = ?
+      # シングルスレッドェ…
+      @address_records = @db.execute(<<-EOS, name, ACTIVE)
+        SELECT ip_address, ttl, weight, priority FROM records
+        WHERE name = ? AND activity = ?
       EOS
+
+      @address_records.length.nonzero?
     end
 
     def lookup_addresses(name)
-      records = []
+      # 優先度の高いレコードを検索
+      records = @address_records.select {|i| i[3] == MASTER }
 
-      sql = <<-EOS
-        SELECT ip_address, ttl, weight FROM records
-        WHERE name = ? AND priority = ? AND activity = ?
-      EOS
+      # レコードが見つからなかった場合は優先度の低いレコードを選択
+      records = @address_records if records.empty?
 
-      # 優先度の高いアクティブなレコードを検索
-      @db.execute(sql, name, 1, 1).each {|i| records << i }
-
-      # レコードが見つからなかった場合は優先度の低いレコードを検索
-      @db.execute(sql, name, 0, 1).each {|i| records << i } if records.empty?
-
-      return records
+      # IPアドレス、TTL、Weightを返す
+      return records.map {|i| i.values_at(0, 1, 2) }
+    ensure
+      # エラー検出のため、一応クリア
+      @address_records = nil
     end
 
     def name_exist?(address)
       address = x_ip_addr(address)
 
-      @db.get_first_row(<<-EOS, address, 1).first.nonzero?
-        SELECT COUNT(*) FROM records WHERE ip_address = ? AND activity = ?
+      # シングルスレッドェ…
+      @name_records = @db.execute(<<-EOS, address, ACTIVE)
+        SELECT name, ttl, priority FROM records
+        WHERE ip_address = ? AND activity = ?
       EOS
+
+      @name_records.length.nonzero?
     end
 
     def lookup_name(address)
-      address = x_ip_addr(address)
-      record = nil
+      # 優先度の高いレコードを検索
+      record = @name_records.find {|i| i[2] == MASTER }
 
-      sql = <<-EOS
-        SELECT name, ttl, weight FROM records
-        WHERE ip_address = ? AND priority = ? AND activity = ? LIMIT 1
-      EOS
+      # レコードが見つからなかった場合は優先度の低いレコード選択
+      record = @name_records.first unless record
 
-      # 優先度の高いアクティブなレコードを検索
-      record = @db.get_first_row(sql, address, 1, 1)
-
-      # レコードが見つからなかった場合は優先度の低いレコードを検索
-      record = @db.get_first_row(sql, address, 0, 1) unless record
-
-      return record
+      # ホスト名、TTLを返す
+      return record.values_at(0, 1)
+    ensure
+      # エラー検出のため、一応クリア
+      @name_records = nil
     end
 
     private
@@ -129,7 +129,7 @@ module Murakumo
       # （Typeは必要？）
       @db.execute(<<-EOS)
         CREATE TABLE records (
-          ip_address INTEGER PRIMARY KEY,
+          ip_address INTEGER PRIMARY KEY
           , name     TEXT NOT NULL
           , ttl      INTEGER NOT NULL
           , weight   INTEGER NOT NULL
@@ -140,18 +140,8 @@ module Murakumo
 
       # インデックスを作成（必要？）
       @db.execute(<<-EOS)
-        CREATE INDEX idx_name_prio_act
-        ON records (name, priority, activity)
-      EOS
-
-      @db.execute(<<-EOS)
         CREATE INDEX idx_name_act
         ON records (name, activity)
-      EOS
-
-      @db.execute(<<-EOS)
-        CREATE INDEX idx_ip_prio_act
-        ON records (ip_address, priority, activity)
       EOS
 
       @db.execute(<<-EOS)

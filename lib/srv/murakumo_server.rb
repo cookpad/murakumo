@@ -62,7 +62,7 @@ module Murakumo
 
           # look up PTR record
           match(@cloud.method(:name_exist?), :PTR) do |transaction|
-            name, ttl, weight = @@cloud.lookup_name(transaction.name)
+            name, ttl = @@cloud.lookup_name(transaction.name)
             transaction.respond!(Resolv::DNS::Name.create("#{name}."), :ttl => ttl)
           end
 

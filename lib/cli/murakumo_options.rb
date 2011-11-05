@@ -2,11 +2,13 @@ require 'logger'
 require 'optopus'
 require 'resolv'
 
+require 'misc/murakumo_const'
+
 Version = '0.1.0'
 
 def parse_args
   optopus do
-    desc 'resource record: <ip_addr>,<hostname>[,<TTL>[,weight[,{MASTER,BACKUP}]]] (required)'
+    desc 'resource record: <ip_addr>,<hostname>[,<TTL>[,weight[,{master|backup}]]] (required)'
     option :record, '-R', '--record RR', :type => Array, :required => true do |value|
       ip_addr, hostname, ttl, weight, master_backup = value
 
@@ -25,7 +27,7 @@ def parse_args
       weight.nil? or /\A\d+\Z/ =~ weight or invalid_argument
 
       # MASTER or BACKUP
-      master_backup.nil? or /\A(MASTER|BACKUP)\Z/i =~ master_backup or invalid_argument
+      master_backup.nil? or /\A(master|backup)\Z/i =~ master_backup or invalid_argument
     end # :record
 
     desc 'key for authentication (required)'
@@ -85,10 +87,10 @@ def parse_args
     after do |options|
       # resource record
       record = options[:record]
-      [nil, nil, 60, 1, :MASTER].each_with_index {|v, i| record[i] ||= v }
+      [nil, nil, 60, 1, :master].each_with_index {|v, i| record[i] ||= v }
       record[2] = record[2].to_i # TTL
       record[3] = record[3].to_i # Weight
-      record[4] = record[4].to_s.upcase.to_sym # MASTER or BACKUP
+      record[4] = (/master/i =~ record[4]) ? MASTER : BACKUP
 
       # resolver
       if options[:resolver]
