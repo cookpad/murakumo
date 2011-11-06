@@ -42,7 +42,7 @@ def parse_args
     option :dns_port, '-p', '--port NUM', :type => Integer, :default => 53
 
     desc 'initial node list of gossip protocols'
-    option :initial_nodes, '-i', '--initial-nodes IP_LIST', :type => Array, :default => [] do |value|
+    option :initial_nodes, '-I', '--initial-nodes IP_LIST', :type => Array, :default => [] do |value|
       value.all? {|i| /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ i } or invalid_argument
     end
 
@@ -61,10 +61,10 @@ def parse_args
     option :daemon, '-d', '--daemon CMD', :type => [:start, :stop, :restart, :status]
 
     desc 'output path of a log'
-    option :log_path, '-l', '--log-path PATH', :default => '/var/log/murakumo.log'
+    option :log_path, '-l', '--log-path PATH'
 
     desc 'output level of a log'
-    option :log_level, '-L', '--log-level LEVEL', :type => [:debug, :info, :warn, :error, :fatal], :default => :debug
+    option :log_level, '-L', '--log-level LEVEL', :type => [:debug, :info, :warn, :error, :fatal], :default => :info
 
     desc 'path of a configuration file'
     config_file '-c', '--config PATH'
@@ -98,7 +98,7 @@ def parse_args
       end
 
       # logger
-      options[:logger] = Logger.new(options[:log_path])
+      options[:logger] = Logger.new(options[:log_path] || $stderr)
       options[:logger].level = Logger.const_get(options[:log_level].to_s.upcase)
     end
 
