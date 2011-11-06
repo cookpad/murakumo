@@ -31,7 +31,7 @@ def parse_args
     end # :record
 
     desc 'key for authentication (required)'
-    option :record, '-K', '--auth-key STRING', :required => true
+    option :auth_key, '-K', '--auth-key STRING', :required => true
 
     desc 'ip address to bind'
     option :dns_address, '-a', '--address IP', :default => '0.0.0.0' do |value|
@@ -87,7 +87,7 @@ def parse_args
     after do |options|
       # resource record
       record = options[:record]
-      [nil, nil, 60, 1, 'master'].each_with_index {|v, i| record[i] ||= v }
+      [nil, nil, 60, 100, 'master'].each_with_index {|v, i| record[i] ||= v }
       record[2] = record[2].to_i # TTL
       record[3] = record[3].to_i # Weight
       record[4] = (/master/i =~ record[4]) ? Murakumo::MASTER : Murakumo::BACKUP

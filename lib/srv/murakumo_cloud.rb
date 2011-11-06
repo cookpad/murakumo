@@ -129,7 +129,7 @@ module Murakumo
       # （Typeは必要？）
       @db.execute(<<-EOS)
         CREATE TABLE records (
-          ip_address INTEGER PRIMARY KEY
+          ip_address TEXT PRIMARY KEY NOT NULL
           , name     TEXT NOT NULL
           , ttl      INTEGER NOT NULL
           , weight   INTEGER NOT NULL
