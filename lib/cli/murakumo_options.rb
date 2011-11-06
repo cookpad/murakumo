@@ -37,7 +37,7 @@ def parse_args
       /\A[0-9a-z\.\-]+\Z/ =~ hostname or invalid_argument
 
       # TTL
-      unless ttl.nil? or (/\A\d+\Z/ =~ ttl) and ttl.to_i > 0)
+      unless ttl.nil? or (/\A\d+\Z/ =~ ttl and ttl.to_i > 0)
         invalid_argument
       end
     end # :host
@@ -103,7 +103,7 @@ def parse_args
       options[:host][2] = (options[:host][2] || 60).to_i # TTL
 
       # aliases
-      options[:aliases] = options[:aliases].map do |r|
+      options[:aliases] = (options[:aliases] || []).map do |r|
         [nil, 60, 100, 'master'].each_with_index {|v, i| r[i] ||= v }
 
         [

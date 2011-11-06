@@ -13,20 +13,18 @@ module Murakumo
       # リソースレコードからホストのアドレスとデータを取り出す
       host_data = options[:host]
       address = host_data.shift
+      host_data.concat [0, ORIGIN, ACTIVE]
+      alias_datas = options[:aliases].map {|r| r + [ACTIVE] }
 
       # データベースを作成してレコードを更新
       create_database
-      update(address, host_data + [0, ORIGIN, ACTIVE])
-
-      (options[:aliases] || []).each do |r|
-        update(address, r + [ACTIVE])
-      end
+      update(address, [host_data] + alias_datas)
 
       # ゴシップオブジェクトを生成
       @gossip = RGossip2.client({
         :initial_nodes   => options[:initial_nodes],
         :address         => address,
-        :data            => data,
+        :data            => [host_data] + alias_datas,
         :auth_key        => options[:auth_key],
         :port            => options[:gossip_port],
         :node_lifetime   => options[:gossip_node_lifetime],
@@ -58,10 +56,20 @@ module Murakumo
 
     # Operation of storage 
 
-    def update(address, data)
-      @db.execute(<<-EOS, address, *data)
-        REPLACE INTO records (ip_address, name, ttl, weight, priority, activity)
-        VALUES (?, ?, ?, ?, ?, ?)
+    def update(address, datas)
+      datas.each do |i|
+        @db.execute(<<-EOS, address, *i)
+          REPLACE INTO records (ip_address, name, ttl, weight, priority, activity)
+          VALUES (?, ?, ?, ?, ?, ?)
+        EOS
+      end
+
+      # データにないレコードは消す
+      names = datas.map {|i| "'#{i.first}'" }.join(',')
+
+      @db.execute(<<-EOS, address)
+        DELETE FROM records
+        WHERE ip_address = ? AND name NOT IN (#{names})
       EOS
     end
 
@@ -159,12 +167,13 @@ module Murakumo
       # （Typeは必要？）
       @db.execute(<<-EOS)
         CREATE TABLE records (
-          ip_address TEXT NOT NULL
-          , name     TEXT NOT NULL
-          , ttl      INTEGER NOT NULL
-          , weight   INTEGER NOT NULL
-          , priority INTEGER NOT NULL /* MASTER:1, BACKUP:0, ORIGIN:-1 */
-          , activity INTEGER NOT NULL /* Active:1, Inactive:0 */
+          ip_address TEXT NOT NULL,
+          name       TEXT NOT NULL,
+          ttl        INTEGER NOT NULL,
+          weight     INTEGER NOT NULL,
+          priority   INTEGER NOT NULL, /* MASTER:1, BACKUP:0, ORIGIN:-1 */
+          activity   INTEGER NOT NULL, /* Active:1, Inactive:0 */
+          PRIMARY KEY (ip_address, name)
         )
       EOS
 

@@ -61,10 +61,11 @@ module Murakumo
                 # いずれかの時点で必ず0以下になる
                 if rand_num < 0
                   transaction.respond!(address, :ttl => ttl)
+                  break
                 end
               end
             end
-          end
+          end # match
 
           # look up PTR record
           match(@@cloud.method(:name_exist?), :PTR) do |transaction|
