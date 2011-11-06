@@ -93,7 +93,7 @@ def parse_args
     option :gossip_node_lifetime, nil, '--gossip-node-lifetime NUM', :type => Integer, :default => 10
 
     desc 'transmitting interval of a gossip protocol'
-    option :gossip_send_interval, nil, '--gossip-send-interval NUM', :type => Float, :default => 0.1
+    option :gossip_send_interval, nil, '--gossip-send-interval NUM', :type => Float, :default => 0.3
 
     desc 'reception timeout of a gossip protocol'
     option :gossip_receive_timeout, nil, '--gossip-receive-timeout NUM', :type => Integer, :default => 3
