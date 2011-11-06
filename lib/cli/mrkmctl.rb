@@ -1,11 +1,13 @@
+require 'drb/drb'
+
 require 'cli/mrkmctl_options'
 
 # オプションをパース
 options = parse_args
 p options
 
-there = DRbObject.new_with_uri("drbunix:#{@@options[:sock]}")
+there = DRbObject.new_with_uri("drbunix:#{options[:socket]}")
 
-there.database.execute('SELECT * FROM records').each do |r|
-  p r
-end
+p there.records
+#  p i
+#end

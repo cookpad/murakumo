@@ -49,6 +49,14 @@ module Murakumo
     # Control of service
     def_delegators :@gossip, :start, :stop
 
+    def records
+      columns = %w(ip_address name ttl weight priority activity)
+
+      @db.execute(<<-EOS).map {|i| i.values_at(*columns) }
+        SELECT * FROM records ORDER BY ip_address, name
+      EOS
+    end
+
     def close
       # データベースをクローズ
       @db.close

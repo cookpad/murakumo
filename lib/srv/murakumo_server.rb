@@ -23,23 +23,16 @@ module Murakumo
         @@cloud = Cloud.new(options)
       end
 
-      def cloud
-        @@cloud
-      end
-
-      def database
-        @@db
-      end
-
       def run
         RubyDNS.run_server(:listen => [[:udp, @@options[:dns_address], @@options[:dns_port]]]) do
           # RubyDNS::Serverのコンテキスト
           @logger = @@options[:logger]
 
           on(:start) do
-            if @@options[:daemon] and @@options[:sock]
+            if @@options[:socket]
               # ServerクラスをDRuby化
-              DRb.start_service("drbunix:#{@@options[:sock]}", self)
+              DRb.start_service("drbunix:#{@@options[:socket]}", @@cloud)
+              at_exit { FileUtils.rm_f(@@options[:socket]) }
             end
 
             # ゴシッププロトコルを開始
@@ -87,7 +80,6 @@ module Murakumo
 
       def shutdown
         @@cloud.stop
-        FileUtils.rm_f(@@options[:sock]) if @@options[:sock]
       end
 
     end # class << self
