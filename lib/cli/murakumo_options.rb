@@ -19,7 +19,7 @@ def parse_args
       /\A[0-9a-z\.\-]+\Z/ =~ hostname or invalid_argument
 
       # TTL
-      unless ttl.nil? or (\A\d+\Z/ =~ ttl and ttl.to_i > 0)
+      unless ttl.nil? or (/\A\d+\Z/ =~ ttl and ttl.to_i > 0)
         invalid_argument
       end
 

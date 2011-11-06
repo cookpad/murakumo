@@ -2,7 +2,6 @@ require 'drb/drb'
 require 'fileutils'
 require 'rexec'
 require 'rexec/daemon'
-require 'rgossip'
 require 'rubydns'
 require 'socket'
 
@@ -29,7 +28,7 @@ module Murakumo
       end
 
       def run
-        RubyDNS.run_server(:listen => [[:udp, @options[:dns_address], @options[:dns_port]]) do
+        RubyDNS.run_server(:listen => [[:udp, @options[:dns_address], @options[:dns_port]]]) do
           on(:start) do
             logger = @@options[:logger]
 
@@ -57,7 +56,7 @@ module Murakumo
               if rand_num < 0
                 transaction.respond!(address, :ttl => ttl)
               end
-            }
+            end
           end
 
           # look up PTR record

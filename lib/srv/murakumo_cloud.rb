@@ -5,9 +5,9 @@ require 'sqlite3'
 require 'misc/murakumo_const'
 
 module Murakumo
-  extend Forwardable
 
   class Cloud
+    extend Forwardable
 
     def initialize(options)
       # リソースレコードからアドレスとデータを取り出す
@@ -62,7 +62,7 @@ module Murakumo
       EOS
     end
 
-    delete(address)
+    def delete(address)
       @db.execute('DELETE FROM records WHERE ip_address = ?', address)
     end
 
