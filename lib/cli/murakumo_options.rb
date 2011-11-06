@@ -64,7 +64,7 @@ def parse_args
     option :log_path, '-l', '--log-path PATH', :default => '/var/log/murakumo.log'
 
     desc 'output level of a log'
-    option :log_level, '-L', '--log-level LEVEL', :type => [:debug, :info, :warn, :error, :fatal], :default => :info
+    option :log_level, '-L', '--log-level LEVEL', :type => [:debug, :info, :warn, :error, :fatal], :default => :debug
 
     desc 'path of a configuration file'
     config_file '-c', '--config PATH'

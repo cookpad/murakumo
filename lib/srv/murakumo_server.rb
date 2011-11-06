@@ -28,10 +28,11 @@ module Murakumo
       end
 
       def run
-        RubyDNS.run_server(:listen => [[:udp, @options[:dns_address], @options[:dns_port]]]) do
-          on(:start) do
-            logger = @@options[:logger]
+        RubyDNS.run_server(:listen => [[:udp, @@options[:dns_address], @@options[:dns_port]]]) do
+          # RubyDNS::Serverのコンテキスト
+          @logger = @@options[:logger]
 
+          on(:start) do
             if @@options[:daemon] and @@options[:sock]
               # ServerクラスをDRuby化
               DRb.start_service("drbunix:#{@@options[:sock]}", self)
@@ -46,7 +47,7 @@ module Murakumo
             records = @@cloud.lookup_addresses(transaction.name)
 
             # 重み付けに応じてアドレスを返す
-            total_weight = records.inject {|r, i| r + i[2] }
+            total_weight = records.inject(0) {|r, i| r + i[2] }
             rand_num = rand(total_weight)
 
             records.each do |address, ttl, weight|
@@ -60,7 +61,7 @@ module Murakumo
           end
 
           # look up PTR record
-          match(@cloud.method(:name_exist?), :PTR) do |transaction|
+          match(@@cloud.method(:name_exist?), :PTR) do |transaction|
             name, ttl = @@cloud.lookup_name(transaction.name)
             transaction.respond!(Resolv::DNS::Name.create("#{name}."), :ttl => ttl)
           end

@@ -80,13 +80,13 @@ module Murakumo
 
     def lookup_addresses(name)
       # 優先度の高いレコードを検索
-      records = @address_records.select {|i| i[3] == MASTER }
+      records = @address_records.select {|i| i['priority'] == MASTER }
 
       # レコードが見つからなかった場合は優先度の低いレコードを選択
       records = @address_records if records.empty?
 
       # IPアドレス、TTL、Weightを返す
-      return records.map {|i| i.values_at(0, 1, 2) }
+      return records.map {|i| i.values_at('ip_address', 'ttl', 'weight') }
     ensure
       # エラー検出のため、一応クリア
       @address_records = nil
@@ -106,13 +106,13 @@ module Murakumo
 
     def lookup_name(address)
       # 優先度の高いレコードを検索
-      record = @name_records.find {|i| i[2] == MASTER }
+      record = @name_records.find {|i| i['priority'] == MASTER }
 
       # レコードが見つからなかった場合は優先度の低いレコード選択
       record = @name_records.first unless record
 
       # ホスト名、TTLを返す
-      return record.values_at(0, 1)
+      return record.values_at('name', 'ttl')
     ensure
       # エラー検出のため、一応クリア
       @name_records = nil
@@ -124,6 +124,8 @@ module Murakumo
     # もう少し並列処理に強いストレージに変えたいが…
     def create_database
       @db = SQLite3::Database.new(':memory:')
+      @db.type_translation = true
+      @db.results_as_hash = true
 
       # リソースレコード用のテーブル
       # （Typeは必要？）
