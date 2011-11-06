@@ -12,12 +12,12 @@ def parse_args
     end
 
     desc 'adds or updates a record: <hostname>[,<TTL>[,weight[,{master|backup}]]]'
-    option :add, '-A', '--add RECORD' do |v|
+    option :add, '-A', '--add RECORD', :type => Array, :multiple => true do |v|
       # XXX:
     end
 
     desc 'deletes a record'
-    option :delete, '-D', '--delete RECORD' do |v|
+    option :delete, '-D', '--delete NAME', :multiple => true do |v|
       # XXX:
     end
 
