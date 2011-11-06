@@ -27,6 +27,10 @@ module Murakumo
         @@cloud
       end
 
+      def database
+        @@db
+      end
+
       def run
         RubyDNS.run_server(:listen => [[:udp, @@options[:dns_address], @@options[:dns_port]]]) do
           # RubyDNS::Serverのコンテキスト
