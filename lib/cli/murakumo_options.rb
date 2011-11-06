@@ -43,7 +43,7 @@ def parse_args
     end # :host
 
     desc 'resource record of an alias: <hostname>[,<TTL>[,weight[,{master|backup}]]]'
-    option :aliases, '-A', '--alias RECORD', :type => Array do |value|
+    option :aliases, '-A', '--alias RECORD', :type => Array, :multiple => true do |value|
       value.length <= 4 or invalid_argument
 
       hostname, ttl, weight, master_backup = value
