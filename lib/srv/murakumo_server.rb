@@ -46,16 +46,22 @@ module Murakumo
           match(@@cloud.method(:address_exist?), :A) do |transaction|
             records = @@cloud.lookup_addresses(transaction.name)
 
-            # 重み付けに応じてアドレスを返す
-            total_weight = records.inject(0) {|r, i| r + i[2] }
-            rand_num = rand(total_weight)
+            if records.length == 1
+              # レコードが一件ならそれを返す
+              address, ttl, weight = records.first
+              transaction.respond!(address, :ttl => ttl)
+            else
+              # 重み付けに応じてアドレスを返す
+              total_weight = records.inject(0) {|r, i| r + i[2] }
+              rand_num = rand(total_weight)
 
-            records.each do |address, ttl, weight|
-              rand_num -= weight
+              records.each do |address, ttl, weight|
+                rand_num -= weight
 
-              # いずれかの時点で必ず0以下になる
-              if rand_num < 0
-                transaction.respond!(address, :ttl => ttl)
+                # いずれかの時点で必ず0以下になる
+                if rand_num < 0
+                  transaction.respond!(address, :ttl => ttl)
+                end
               end
             end
           end

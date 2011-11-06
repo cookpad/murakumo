@@ -10,14 +10,17 @@ module Murakumo
     extend Forwardable
 
     def initialize(options)
-      # リソースレコードからアドレスとデータを取り出す
-      data = options[:record]
-      address = data.shift
-      data[4] = ACTIVE # 最初はアクティブ
+      # リソースレコードからホストのアドレスとデータを取り出す
+      host_data = options[:host]
+      address = host_data.shift
 
       # データベースを作成してレコードを更新
       create_database
-      update(address, data)
+      update(address, host_data + [0, ORIGIN, ACTIVE])
+
+      (options[:aliases] || []).each do |r|
+        update(address, r + [ACTIVE])
+      end
 
       # ゴシップオブジェクトを生成
       @gossip = RGossip2.client({
@@ -79,11 +82,24 @@ module Murakumo
     end
 
     def lookup_addresses(name)
-      # 優先度の高いレコードを検索
-      records = @address_records.select {|i| i['priority'] == MASTER }
+      records = nil
 
-      # レコードが見つからなかった場合は優先度の低いレコードを選択
-      records = @address_records if records.empty?
+      if @address_records.length == 1
+        # レコードが一件ならそれを返す
+        records = @address_records
+      else
+        # 優先度の高いレコードを検索
+        records = @address_records.select {|i| i['priority'] == MASTER }
+
+        # レコードが見つからなかった場合は優先度の低いレコードを選択
+        if records.empty?
+          records = @address_records.select {|i| i['priority'] == BACKUP }
+        end
+
+        # それでもレコードが見つからなかった場合はオリジンを選択
+        # ※このパスは通らない
+        records = @address_records if records.empty?
+      end
 
       # IPアドレス、TTL、Weightを返す
       return records.map {|i| i.values_at('ip_address', 'ttl', 'weight') }
@@ -105,11 +121,23 @@ module Murakumo
     end
 
     def lookup_name(address)
-      # 優先度の高いレコードを検索
-      record = @name_records.find {|i| i['priority'] == MASTER }
+      record = nil
 
-      # レコードが見つからなかった場合は優先度の低いレコード選択
-      record = @name_records.first unless record
+      if @name_records.length == 1
+        # レコードが一件ならそれを返す
+        record = @name_records.first
+      else
+        # オリジンを検索
+        record = @name_records.find {|i| i['priority'] == ORIGIN }
+
+        # レコードが見つからなかった場合は優先度の高いレコード選択
+        unless record
+          record = @name_records.find {|i| i['priority'] == ACTIVE }
+        end
+
+        # それでもレコードが見つからなかった場合は優先度の低いレコードを選択
+        record = @name_records.first unless record
+      end
 
       # ホスト名、TTLを返す
       return record.values_at('name', 'ttl')
@@ -131,11 +159,11 @@ module Murakumo
       # （Typeは必要？）
       @db.execute(<<-EOS)
         CREATE TABLE records (
-          ip_address TEXT PRIMARY KEY NOT NULL
+          ip_address TEXT NOT NULL
           , name     TEXT NOT NULL
           , ttl      INTEGER NOT NULL
           , weight   INTEGER NOT NULL
-          , priority INTEGER NOT NULL /* MASTER:1, BACKUP:0 */
+          , priority INTEGER NOT NULL /* MASTER:1, BACKUP:0, ORIGIN:-1 */
           , activity INTEGER NOT NULL /* Active:1, Inactive:0 */
         )
       EOS

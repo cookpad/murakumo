@@ -8,28 +8,6 @@ Version = '0.1.0'
 
 def parse_args
   optopus do
-    desc 'resource record: <ip_addr>,<hostname>[,<TTL>[,weight[,{master|backup}]]] (required)'
-    option :record, '-R', '--record RR', :type => Array, :required => true do |value|
-      ip_addr, hostname, ttl, weight, master_backup = value
-
-      # ip address
-      /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ ip_addr or invalid_argument
-
-      # hostname
-      /\A[0-9a-z\.\-]+\Z/ =~ hostname or invalid_argument
-
-      # TTL
-      unless ttl.nil? or (/\A\d+\Z/ =~ ttl and ttl.to_i > 0)
-        invalid_argument
-      end
-
-      # Weight
-      weight.nil? or /\A\d+\Z/ =~ weight or invalid_argument
-
-      # MASTER or BACKUP
-      master_backup.nil? or /\A(master|backup)\Z/i =~ master_backup or invalid_argument
-    end # :record
-
     desc 'key for authentication (required)'
     option :auth_key, '-K', '--auth-key STRING', :required => true
 
@@ -45,6 +23,45 @@ def parse_args
     option :initial_nodes, '-I', '--initial-nodes IP_LIST', :type => Array, :default => [] do |value|
       value.all? {|i| /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ i } or invalid_argument
     end
+
+    desc "host's resource record : <ip_addr>[,<hostname>[,<TTL>]] (required)"
+    option :host, '-H', '--host RECORD', :type => Array, :required => true do |value|
+      value.length <= 3 or invalid_argument
+
+      ip_addr, hostname, ttl = value
+
+      # ip address
+      /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ ip_addr or invalid_argument
+
+      # hostname
+      /\A[0-9a-z\.\-]+\Z/ =~ hostname or invalid_argument
+
+      # TTL
+      unless ttl.nil? or (/\A\d+\Z/ =~ ttl) and ttl.to_i > 0)
+        invalid_argument
+      end
+    end # :host
+
+    desc 'resource record of an alias: <hostname>[,<TTL>[,weight[,{master|backup}]]]'
+    option :aliases, '-A', '--alias RECORD', :type => Array do |value|
+      value.length <= 4 or invalid_argument
+
+      hostname, ttl, weight, master_backup = value
+
+      # hostname
+      /\A[0-9a-z\.\-]+\Z/ =~ hostname or invalid_argument
+
+      # TTL
+      unless ttl.nil? or (/\A\d+\Z/ =~ ttl and ttl.to_i > 0)
+        invalid_argument
+      end
+
+      # Weight
+      weight.nil? or /\A\d+\Z/ =~ weight or invalid_argument
+
+      # MASTER or BACKUP
+      master_backup.nil? or /\A(master|backup)\Z/i =~ master_backup or invalid_argument
+    end # :aliases
 
     desc 'path of a socket file'
     option :socket, '-S', '--socket SOCK', :default => '/var/tmp/murakumo.sock'
@@ -69,9 +86,6 @@ def parse_args
     desc 'path of a configuration file'
     config_file '-c', '--config PATH'
 
-    desc 'path of the configuration file of a health check'
-    option :health_check, '-H', '--health-check PATH'
-
     desc 'port number of a gossip service'
     option :gossip_port, nil, '--gossip-port NUM', :type => Integer, :default => 10870
 
@@ -85,12 +99,20 @@ def parse_args
     option :gossip_receive_timeout, nil, '--gossip-receive-timeout NUM', :type => Integer, :default => 3
 
     after do |options|
-      # resource record
-      record = options[:record]
-      [nil, nil, 60, 100, 'master'].each_with_index {|v, i| record[i] ||= v }
-      record[2] = record[2].to_i # TTL
-      record[3] = record[3].to_i # Weight
-      record[4] = (/master/i =~ record[4]) ? Murakumo::MASTER : Murakumo::BACKUP
+      # host
+      options[:host][2] = (options[:host][2] || 60).to_i # TTL
+
+      # aliases
+      options[:aliases] = options[:aliases].map do |r|
+        [nil, 60, 100, 'master'].each_with_index {|v, i| r[i] ||= v }
+
+        [
+          r[0],      # name
+          r[1].to_i, # TTL
+          r[2].to_i, # Weight
+          ((/master/i =~ r[3]) ? Murakumo::MASTER : Murakumo::BACKUP),
+        ]
+      end
 
       # resolver
       if options[:resolver]
