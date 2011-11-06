@@ -87,10 +87,10 @@ def parse_args
     after do |options|
       # resource record
       record = options[:record]
-      [nil, nil, 60, 1, :master].each_with_index {|v, i| record[i] ||= v }
+      [nil, nil, 60, 1, 'master'].each_with_index {|v, i| record[i] ||= v }
       record[2] = record[2].to_i # TTL
       record[3] = record[3].to_i # Weight
-      record[4] = (/master/i =~ record[4]) ? MASTER : BACKUP
+      record[4] = (/master/i =~ record[4]) ? Murakumo::MASTER : Murakumo::BACKUP
 
       # resolver
       if options[:resolver]
