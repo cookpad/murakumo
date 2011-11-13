@@ -10,8 +10,21 @@ def parse_args
     option :list, '-L', '--list [NAME]'
 
     desc 'adds or updates a record: <hostname>[,<TTL>[,{master|backup}]]'
-    option :add, '-A', '--add RECORD', :type => Array, :multiple => true do |v|
-      # XXX:
+    option :add, '-A', '--add RECORD', :type => Array, :multiple => true do |value|
+      (1 <= value.length and value.length <= 3) or invalid_argument
+
+      hostname, ttl, master_backup = value
+
+      # hostname
+      /\A[0-9a-z\.\-]+\Z/ =~ hostname or invalid_argument
+
+      # TTL
+      unless ttl.nil? or (/\A\d+\Z/ =~ ttl and ttl.to_i > 0)
+        invalid_argument
+      end
+
+      # MASTER or BACKUP
+      master_backup.nil? or /\A(master|backup)\Z/i =~ master_backup or invalid_argument
     end
 
     desc 'deletes a record'
@@ -36,6 +49,21 @@ def parse_args
     option :socket, '-S', '--socket PATH', :default => '/var/tmp/murakumo.sock'
 
     after do |options|
+      # add
+      if options[:add]
+        options[:add] = options[:add].map do |r|
+          r = r.map {|i| i.to_s.strip }
+          [nil, 60, 'master'].each_with_index {|v, i| r[i] ||= v }
+
+          [
+            r[0], # name
+            r[1].to_i, # TTL
+            ((/master/i =~ r[2].to_s) ? Murakumo::MASTER : Murakumo::BACKUP),
+          ]
+        end
+      end
+
+      # command
       commands = [:list, :add, :delete, :add_node, :delete_node, :set].map {|k|
         [k, options[k]]
       }.select {|i| not i[1].nil? }

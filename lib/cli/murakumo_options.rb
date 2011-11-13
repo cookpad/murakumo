@@ -27,7 +27,7 @@ def parse_args
 
     desc "host's resource record : <ip_addr>[,<hostname>[,<TTL>]] (required)"
     option :host, '-H', '--host RECORD', :type => Array, :required => true do |value|
-      value.length <= 3 or invalid_argument
+      (1 <= value.length and value.length <= 3) or invalid_argument
 
       ip_addr, hostname, ttl = value
 
@@ -45,7 +45,7 @@ def parse_args
 
     desc 'resource record of an alias: <hostname>[,<TTL>[,{master|backup}]]'
     option :aliases, '-A', '--alias RECORD', :type => Array, :multiple => true do |value|
-      value.length <= 4 or invalid_argument
+      (1 <= value.length and value.length <= 3) or invalid_argument
 
       hostname, ttl, master_backup = value
 
@@ -119,7 +119,6 @@ def parse_args
           options[:aliases] = [options[:aliases]]
         end
       end
-      
 
       options[:aliases] = (options[:aliases] || []).map do |r|
         r = r.map {|i| i.to_s.strip }

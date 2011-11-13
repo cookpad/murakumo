@@ -12,18 +12,18 @@ module Murakumo
     def initialize(options)
       # リソースレコードからホストのアドレスとデータを取り出す
       host_data = options[:host]
-      address = host_data.shift
-      host_data.concat [0, ORIGIN, ACTIVE]
+      @address = host_data.shift
+      host_data.concat [ORIGIN, ACTIVE]
       alias_datas = options[:aliases].map {|r| r + [ACTIVE] }
 
       # データベースを作成してレコードを更新
       create_database
-      update(address, [host_data] + alias_datas)
+      update(@address, [host_data] + alias_datas)
 
       # ゴシップオブジェクトを生成
       @gossip = RGossip2.client({
         :initial_nodes   => options[:initial_nodes],
-        :address         => address,
+        :address         => @address,
         :data            => [host_data] + alias_datas,
         :auth_key        => options[:auth_key],
         :port            => options[:gossip_port],
@@ -34,12 +34,12 @@ module Murakumo
       })
 
       # ノードの更新をフック
-      @gossip.context.callback_handler = lambda do |action, address, timestamp, data|
-        case action
+      @gossip.context.callback_handler = lambda do |act, addr, ts, dt|
+        case act
         when :add, :comeback
-          update(address, data)
+          update(addr, dt)
         when :delete
-          delete(address)
+          delete(addr)
         end
       end
 
@@ -49,12 +49,42 @@ module Murakumo
     # Control of service
     def_delegators :@gossip, :start, :stop
 
-    def records
+    def list_records
       columns = %w(ip_address name ttl priority activity)
 
       @db.execute(<<-EOS).map {|i| i.values_at(*columns) }
         SELECT #{columns.join(', ')} FROM records ORDER BY ip_address, name
       EOS
+    end
+
+    def add_or_rplace_records(records)
+      @gossip.transaction do
+        origin_name = nil
+
+        # 既存のホスト名は削除
+        @gossip.data.reject! do |d|
+          if records.any? {|r| r[0] == d[0] }
+            if d[2] == ORIGIN
+              # オリジナルのホスト名は更新不可
+              warn('original host name cannot be updated')
+              origin_name = d[0]
+              false
+            else
+              true
+            end
+          end
+        end
+
+        # オリジナルのホスト名を更新データから削除
+        records.reject! {|r| r[0] == origin_name } if origin_name
+
+        # データを更新
+        records = records.map {|r| r + [ACTIVE] }
+        @gossip.data.concat(records)
+      end # transaction
+
+      # データベースを更新
+      update(@address, records, true)
     end
 
     def close
@@ -64,7 +94,7 @@ module Murakumo
 
     # Operation of storage 
 
-    def update(address, datas)
+    def update(address, datas, update_only = false)
       datas.each do |i|
         @db.execute(<<-EOS, address, *i)
           REPLACE INTO records (ip_address, name, ttl, priority, activity)
@@ -73,12 +103,14 @@ module Murakumo
       end
 
       # データにないレコードは消す
-      names = datas.map {|i| "'#{i.first}'" }.join(',')
+      unless update_only
+        names = datas.map {|i| "'#{i.first}'" }.join(',')
 
-      @db.execute(<<-EOS, address)
-        DELETE FROM records
-        WHERE ip_address = ? AND name NOT IN (#{names})
-      EOS
+        @db.execute(<<-EOS, address)
+          DELETE FROM records
+          WHERE ip_address = ? AND name NOT IN (#{names})
+        EOS
+      end
     end
 
     def delete(address)
