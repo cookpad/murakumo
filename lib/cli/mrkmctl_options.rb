@@ -12,7 +12,6 @@ def parse_args
     desc 'adds or updates a record: <hostname>[,<TTL>[,{master|backup}]]'
     option :add, '-A', '--add RECORD', :type => Array, :multiple => true do |value|
       (1 <= value.length and value.length <= 3) or invalid_argument
-      value = value.map {|i| (i.nil? or i.strip.empty?) ? nil : i }
 
       hostname, ttl, master_backup = value
 
@@ -57,7 +56,7 @@ def parse_args
       # add
       if options[:add]
         options[:add] = options[:add].map do |r|
-          r = r.map {|i| i.to_s.strip }
+          r = r.map {|i| i ? i.to_s.strip : i }
           [nil, 60, 'master'].each_with_index {|v, i| r[i] ||= v }
 
           [
