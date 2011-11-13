@@ -1,3 +1,4 @@
+require 'socket'
 require 'timeout'
 require 'resolv-replace'
 
@@ -9,7 +10,17 @@ module Murakumo
 
     # ヘルスチェックのコンテキスト
     class Context
-    end
+
+      # TCPチェッカー
+      def tcp_check(port, host = '127.0.0.1')
+        s = TCPSocket.new(host, port)
+        s.close
+        return true
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
+        return false
+      end
+
+    end # Context
 
     def initialize(cloud, logger, options)
       @cloud = cloud
@@ -57,7 +68,7 @@ module Murakumo
 
     def toggle_health
       @normal_health = !@normal_health
-      activity = (@normal_health ? Active : Inactive)
+      activity = (@normal_health ? ACTIVE : INACTIVE)
 
       @cloud.gossip.transaction do
         @cloud.gossip.data.each {|i| i[3] = activity }
@@ -70,6 +81,11 @@ module Murakumo
 
       @healthy_count = 0
       @unhealthy_count = 0
+
+      if @logger
+        status = @normal_health ? 'healthy' : 'unhealthy'
+        @logger.info("health condition changed: #{status}")
+      end
     end
 
     def start
@@ -87,6 +103,11 @@ module Murakumo
               }
             rescue Timeout::Error
               retval = false
+            end
+
+            if @logger
+              status = retval == true ? 'good' : retval == false ? 'bad' : '-'
+              @logger.debug("result of a health check: #{status}")
             end
 
             if retval == true
