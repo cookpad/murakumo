@@ -7,11 +7,9 @@ Version = '0.1.0'
 def parse_args
   optopus do
     desc 'displays a list of a record'
-    option :list, '-L', '--list [NAME]' do |v|
-      # XXX:
-    end
+    option :list, '-L', '--list [NAME]'
 
-    desc 'adds or updates a record: <hostname>[,<TTL>[,weight[,{master|backup}]]]'
+    desc 'adds or updates a record: <hostname>[,<TTL>[,{master|backup}]]'
     option :add, '-A', '--add RECORD', :type => Array, :multiple => true do |v|
       # XXX:
     end
