@@ -20,7 +20,7 @@ def parse_args
     option :dns_port, '-p', '--port NUM', :type => Integer, :default => 53
 
     desc 'initial node list of gossip protocols'
-    option :initial_nodes, '-I', '--initial-nodes IP_LIST', :type => Array, :default => [] do |value|
+    option :initial_nodes, '-i', '--initial-nodes IP_LIST', :type => Array, :default => [] do |value|
       value.all? {|i| /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ i } or invalid_argument
     end
 
@@ -61,15 +61,15 @@ def parse_args
     end # :aliases
 
     desc 'ip address of a default resolver'
-    option :resolver, nil, '--resolver IP'  do |value|
+    option :resolver, '-r', '--resolver IP'  do |value|
       /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ value or invalid_argument
     end
 
     desc 'path of a socket file'
-    option :socket, nil, '--socket PATH', :default => '/var/tmp/murakumo.sock'
+    option :socket, '-S', '--socket PATH', :default => '/var/tmp/murakumo.sock'
 
     desc 'maximum number of the IP address returned as a response'
-    option :max_ip_num, nil, '--max-ip-number NUM', :type => Integer, :default => 8 do |value|
+    option :max_ip_num, '-n', '--max-ip-number NUM', :type => Integer, :default => 8 do |value|
       invalid_argument if value < 1
     end
 
@@ -86,16 +86,16 @@ def parse_args
     config_file '-c', '--config PATH'
 
     desc 'port number of a gossip service'
-    option :gossip_port, nil, '--gossip-port NUM', :type => Integer, :default => 10870
+    option :gossip_port, '-P', '--gossip-port NUM', :type => Integer, :default => 10870
 
     desc 'lifetime of the node of a gossip protocol'
-    option :gossip_node_lifetime, nil, '--gossip-node-lifetime NUM', :type => Integer, :default => 10
+    option :gossip_node_lifetime, '-T', '--gossip-node-lifetime NUM', :type => Integer, :default => 10
 
     desc 'transmitting interval of a gossip protocol'
-    option :gossip_send_interval, nil, '--gossip-send-interval NUM', :type => Float, :default => 0.3
+    option :gossip_send_interval, '-I', '--gossip-send-interval NUM', :type => Float, :default => 0.3
 
     desc 'reception timeout of a gossip protocol'
-    option :gossip_receive_timeout, nil, '--gossip-receive-timeout NUM', :type => Integer, :default => 3
+    option :gossip_receive_timeout, '-O', '--gossip-receive-timeout NUM', :type => Integer, :default => 3
 
     after do |options|
       # host

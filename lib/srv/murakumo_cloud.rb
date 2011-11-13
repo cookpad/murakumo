@@ -68,7 +68,7 @@ module Murakumo
       datas.each do |i|
         @db.execute(<<-EOS, address, *i)
           REPLACE INTO records (ip_address, name, ttl, priority, activity)
-          VALUES (?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?)
         EOS
       end
 
