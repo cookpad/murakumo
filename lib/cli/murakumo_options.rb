@@ -1,6 +1,7 @@
 require 'logger'
 require 'optopus'
 require 'resolv'
+require 'socket'
 
 require 'misc/murakumo_const'
 
@@ -98,23 +99,37 @@ def parse_args
     option :gossip_receive_timeout, '-O', '--gossip-receive-timeout NUM', :type => Integer, :default => 3
 
     after do |options|
-      # host
-      options[:host][2] = (options[:host][2] || 60).to_i # TTL
-
-      # aliases
-      options[:aliases] = (options[:aliases] || []).map do |r|
-        [nil, 60, 'master'].each_with_index {|v, i| r[i] ||= v }
-
-        [
-          r[0],      # name
-          r[1].to_i, # TTL
-          ((/master/i =~ r[2]) ? Murakumo::MASTER : Murakumo::BACKUP),
-        ]
-      end
-
       # resolver
       if options[:resolver]
         options[:resolver] = Resolv::DNS.new(:nameserver => options[:resolver])
+      end
+
+      # host
+      options[:host] = options[:host].map {|i| i.strip }
+      options[:host][1] ||= Socket.gethostname
+      options[:host][2] = (options[:host][2] || 60).to_i # TTL
+
+      # aliases
+      config_file_aliases = options.config_file['alias']
+
+      if config_file_aliases
+        if config_file_aliases.kind_of?(Array)
+          options[:aliases] = config_file_aliases.map {|i| i.split(',') }
+        else
+          options[:aliases] = [options[:aliases]]
+        end
+      end
+      
+
+      options[:aliases] = (options[:aliases] || []).map do |r|
+        r = r.map {|i| i.to_s.strip }
+        [nil, 60, 'master'].each_with_index {|v, i| r[i] ||= v }
+
+        [
+          r[0], # name
+          r[1].to_i, # TTL
+          ((/master/i =~ r[2].to_s) ? Murakumo::MASTER : Murakumo::BACKUP),
+        ]
       end
 
       # logger
