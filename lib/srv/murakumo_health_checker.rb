@@ -1,26 +1,12 @@
-require 'socket'
 require 'timeout'
 require 'resolv-replace'
 
+require 'srv/murakumo_health_checker_context'
 require 'misc/murakumo_const'
 
 module Murakumo
 
   class HealthChecker
-
-    # ヘルスチェックのコンテキスト
-    class Context
-
-      # TCPチェッカー
-      def tcp_check(port, host = '127.0.0.1')
-        s = TCPSocket.new(host, port)
-        s.close
-        return true
-      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
-        return false
-      end
-
-    end # Context
 
     def initialize(cloud, logger, options)
       @cloud = cloud
@@ -99,7 +85,7 @@ module Murakumo
 
             begin
               retval = timeout(@timeout) {
-                Context.new.instance_eval(@script)
+                HealthCheckerContext.new.instance_eval(@script)
               }
             rescue Timeout::Error
               retval = false
