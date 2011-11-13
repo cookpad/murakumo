@@ -36,7 +36,7 @@ module Murakumo
       # ノードの更新をフック
       @gossip.context.callback_handler = lambda do |act, addr, ts, dt|
         case act
-        when :add, :comeback
+        when :add, :comeback, :update
           update(addr, dt)
         when :delete
           delete(addr)
