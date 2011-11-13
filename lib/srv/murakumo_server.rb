@@ -26,13 +26,32 @@ module Murakumo
       def run
         RubyDNS.run_server(:listen => [[:udp, @@options[:dns_address], @@options[:dns_port]]]) do
           # RubyDNS::Serverのコンテキスト
-          @logger = @@options[:logger]
+          @logger = @@options[:logger] if @@options[:logger]
 
           on(:start) do
             if @@options[:socket]
               # ServerクラスをDRuby化
               DRb.start_service("drbunix:#{@@options[:socket]}", @@cloud)
               at_exit { FileUtils.rm_f(@@options[:socket]) }
+            end
+
+            # HUPでログをローテート
+            if @@options[:logger]
+              trap(:HUP) do
+                if logger = @@options[:logger]
+                  logdev = logger.instance_variable_get(:@logdev)
+
+                  if (dev = logdev.dev).kind_of?(File)
+                    path = dev.path
+                    mutex = logdev.instance_variable_get(:@mutex)
+
+                    mutex.synchronize do
+                      dev.reopen(path, 'a')
+                      dev.sync = true
+                    end
+                  end
+                end
+              end
             end
 
             # ゴシッププロトコルを開始
