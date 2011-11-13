@@ -104,6 +104,11 @@ def parse_args
         options[:resolver] = Resolv::DNS.new(:nameserver => options[:resolver])
       end
 
+      # initial nodes
+      if options[:initial_nodes]
+        options[:initial_nodes] = options[:initial_nodes].map {|i| i.strip }
+      end
+
       # host
       options[:host] = options[:host].map {|i| i.strip }
       options[:host][1] ||= Socket.gethostname

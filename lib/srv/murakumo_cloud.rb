@@ -10,6 +10,9 @@ module Murakumo
     extend Forwardable
 
     def initialize(options)
+      # オプションはインスタンス変数に保存
+      @options = options
+
       # リソースレコードからホストのアドレスとデータを取り出す
       host_data = options[:host]
       @address = host_data.shift
@@ -48,6 +51,47 @@ module Murakumo
 
     # Control of service
     def_delegators :@gossip, :start, :stop
+
+    def to_hash
+      keys = {
+        :auth_key      => 'auth-key',
+        :dns_address   => 'address',
+        :dns_port      => 'port',
+        :initial_nodes => lambda {|v| ['initial-nodes', v.join(',')] },
+        :resolver      => lambda {|v| [
+          'resolver',
+          v.instance_variable_get(:@config).instance_variable_get(:@config_info)[:nameserver]
+        ]},
+        :socket        => 'socket',
+        :max_ip_num    => 'max-ip-number',
+        :log_path      => 'log-path',
+        :log_level     => 'log-level',
+      }
+
+      hash = {}
+
+      keys.each do |k, name|
+        value = @options[k]
+
+        if name.respond_to?(:call)
+          name, value = name.call(value)
+        end
+
+        hash[name] = value if value
+      end
+
+      records = list_records
+
+      hash['host'] = records.find {|r| r[3] == ORIGIN }[0..2].join(',')
+
+      aliases = records.select {|r| r[3] != ORIGIN }.map do |r|
+        [r[1], r[2], (r[3] == MASTER ? 'master' : 'backup')].join(',')
+      end
+
+      hash['alias'] = aliases unless aliases.empty?
+
+      return hash
+    end
 
     def list_records
       columns = %w(ip_address name ttl priority activity)
@@ -125,6 +169,38 @@ module Murakumo
 
       nodes.each do |i|
         @gossip.delete_node(i)
+      end
+
+      return [!errmsg, errmsg]
+    end
+
+    def get_attr(name)
+      return unless ATTRIBUTES.has_key?(name)
+
+      if name == :log_level
+        if @gossip.logger
+          %w(debug info warn error fatal)[@gossip.logger.level]
+        else
+          nil
+        end
+      else
+        attr, conv = ATTRIBUTES[name]
+        @gossip.context.send(attr).to_s
+      end
+    end
+
+    def set_attr(name, value)
+      return unless ATTRIBUTES.has_key?(name)
+
+      errmsg = nil
+
+      if name == :log_level
+        if @gossip.logger
+          @gossip.logger.level = %w(debug info warn error fatal).index(value.to_s)
+        end
+      else
+        attr, conv = ATTRIBUTES[name]
+        @gossip.context.send("#{attr}=", value.send(conv)).to_s
       end
 
       return [!errmsg, errmsg]

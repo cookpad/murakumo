@@ -1,4 +1,5 @@
 require 'drb/drb'
+require 'yaml'
 
 require 'cli/mrkmctl_options'
 require 'misc/murakumo_const'
@@ -52,6 +53,19 @@ IP address       TTL     Priority  Activity  Hostname
   when :delete_node
     is_success, errmsg = there.delete_nodes(arg)
     is_success or raise(errmsg)
+
+  # 属性の取得
+  when :get
+    puts "#{arg}=#{there.get_attr(arg)}"
+
+  # 属性の設定
+  when :set
+    is_success, errmsg = there.set_attr(*arg)
+    is_success or raise(errmsg)
+
+  # 設定の出力
+  when :yaml
+    puts there.to_hash.to_yaml
 
   end
 rescue => e

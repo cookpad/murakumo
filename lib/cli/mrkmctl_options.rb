@@ -46,8 +46,24 @@ def parse_args
       end
     end
 
-    desc 'sets an attribute: name=value'
-    option :set, nil, '--set ATTR', :multiple => true
+    desc "gets an attribute: #{Murakumo::ATTRIBUTES.keys.join(',')}"
+    option :get, '-g', '--get ATTR' do |value|
+      Murakumo::ATTRIBUTES.keys.include?(value.to_sym) or invalid_argument
+    end
+
+    desc "sets an attribute (name=value): #{Murakumo::ATTRIBUTES.keys.join(',')}"
+    option :set, '-s', '--set ATTR' do |value|
+      /\A.+=.+\Z/ =~ value or invalid_argument
+      name, val = value.split('=', 2)
+      Murakumo::ATTRIBUTES.keys.include?(name.to_sym) or invalid_argument
+
+      if name == 'log_level'
+        %w(debug info warn error fatal).include?(value) or invalid_argument
+      end
+    end
+
+    desc ' configuration file is outputted by yaml'
+    option :yaml, '-y', '--yaml'
 
     desc 'path of a socket file'
     option :socket, '-S', '--socket PATH', :default => '/var/tmp/murakumo.sock'
@@ -74,15 +90,26 @@ def parse_args
         end
       end
 
+      if options[:get]
+        options[:get] = options[:get].to_sym
+      end
+
+      if options[:set]
+        options[:set] = options[:set].split('=', 2)
+        options[:set][0] = options[:set][0].to_sym
+      end
+
       # command
-      commands = [:list, :add, :delete, :add_node, :delete_node, :set].map {|k|
+      commands = [:list, :add, :delete, :add_node, :delete_node, :get, :set, :yaml].map {|k|
         [k, options[k]]
       }.select {|i| not i[1].nil? }
 
+      opt_keys = %w(-L -A -D --add-node --delete-node --get --set --yaml)
+
       if commands.length < 1
-        parse_error('command is not specified', '-L', '-A', '-D', '--add-node', '--delete-node', '--set')
+        parse_error('command is not specified', *opt_keys)
       elsif commands.length > 1
-        parse_error('cannot use together', '-L', '-A', '-D', '--add-node', '--delete-node', '--set')
+        parse_error('cannot use together', *opt_keys)
       end
 
       options[:command] = commands.first
