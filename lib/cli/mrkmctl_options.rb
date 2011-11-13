@@ -12,6 +12,7 @@ def parse_args
     desc 'adds or updates a record: <hostname>[,<TTL>[,{master|backup}]]'
     option :add, '-A', '--add RECORD', :type => Array, :multiple => true do |value|
       (1 <= value.length and value.length <= 3) or invalid_argument
+      value = value.map {|i| (i.nil? or i.strip.empty?) ? nil : i }
 
       hostname, ttl, master_backup = value
 
@@ -33,14 +34,14 @@ def parse_args
     end
 
     desc 'adds a node'
-    option :add_node, nil, '--add-node HOST', :multiple => true do |value|
+    option :add_node, '-a', '--add-node HOST', :multiple => true do |value|
       unless [/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/, /\A[0-9a-z\.\-]+\Z/i].any? {|i| i =~ value }
         invalid_argument
       end
     end
 
     desc 'deletes a node'
-    option :delete_node, nil, '--delete-node HOST', :multiple => true do |value|
+    option :delete_node, '-d', '--delete-node HOST', :multiple => true do |value|
       unless [/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/, /\A[0-9a-z\.\-]+\Z/i].any? {|i| i =~ value }
         invalid_argument
       end
