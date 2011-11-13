@@ -43,24 +43,14 @@ module Murakumo
           match(@@cloud.method(:address_exist?), :A) do |transaction|
             records = @@cloud.lookup_addresses(transaction.name)
 
-            if records.length == 1
-              # レコードが一件ならそれを返す
-              address, ttl, weight = records.first
+            # 先頭のAレコードを決定
+            max_ip_num = [records.length, @@options[:max_ip_num]].min
+            first_index = rand(max_ip_num);
+
+            # Aレコードを返す
+            (records + records).slice(first_index, max_ip_num).each do |r|
+              address, ttl = r
               transaction.respond!(address, :ttl => ttl)
-            else
-              # 重み付けに応じてアドレスを返す
-              total_weight = records.inject(0) {|r, i| r + i[2] }
-              rand_num = rand(total_weight)
-
-              records.each do |address, ttl, weight|
-                rand_num -= weight
-
-                # いずれかの時点で必ず0以下になる
-                if rand_num < 0
-                  transaction.respond!(address, :ttl => ttl)
-                  break
-                end
-              end
             end
           end # match
 

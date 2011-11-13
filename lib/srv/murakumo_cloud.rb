@@ -50,10 +50,10 @@ module Murakumo
     def_delegators :@gossip, :start, :stop
 
     def records
-      columns = %w(ip_address name ttl weight priority activity)
+      columns = %w(ip_address name ttl priority activity)
 
       @db.execute(<<-EOS).map {|i| i.values_at(*columns) }
-        SELECT * FROM records ORDER BY ip_address, name
+        SELECT #{columns.join(', ')} FROM records ORDER BY ip_address, name
       EOS
     end
 
@@ -67,7 +67,7 @@ module Murakumo
     def update(address, datas)
       datas.each do |i|
         @db.execute(<<-EOS, address, *i)
-          REPLACE INTO records (ip_address, name, ttl, weight, priority, activity)
+          REPLACE INTO records (ip_address, name, ttl, priority, activity)
           VALUES (?, ?, ?, ?, ?, ?)
         EOS
       end
@@ -90,7 +90,7 @@ module Murakumo
     def address_exist?(name)
       # シングルスレッドェ…
       @address_records = @db.execute(<<-EOS, name, ACTIVE)
-        SELECT ip_address, ttl, weight, priority FROM records
+        SELECT ip_address, ttl, priority FROM records
         WHERE name = ? AND activity = ?
       EOS
 
@@ -117,8 +117,8 @@ module Murakumo
         records = @address_records if records.empty?
       end
 
-      # IPアドレス、TTL、Weightを返す
-      return records.map {|i| i.values_at('ip_address', 'ttl', 'weight') }
+      # IPアドレス、TTLを返す
+      return records.map {|i| i.values_at('ip_address', 'ttl') }
     ensure
       # エラー検出のため、一応クリア
       @address_records = nil
@@ -178,7 +178,6 @@ module Murakumo
           ip_address TEXT NOT NULL,
           name       TEXT NOT NULL,
           ttl        INTEGER NOT NULL,
-          weight     INTEGER NOT NULL,
           priority   INTEGER NOT NULL, /* MASTER:1, BACKUP:0, ORIGIN:-1 */
           activity   INTEGER NOT NULL, /* Active:1, Inactive:0 */
           PRIMARY KEY (ip_address, name)

@@ -42,11 +42,11 @@ def parse_args
       end
     end # :host
 
-    desc 'resource record of an alias: <hostname>[,<TTL>[,weight[,{master|backup}]]]'
+    desc 'resource record of an alias: <hostname>[,<TTL>[,{master|backup}]]'
     option :aliases, '-A', '--alias RECORD', :type => Array, :multiple => true do |value|
       value.length <= 4 or invalid_argument
 
-      hostname, ttl, weight, master_backup = value
+      hostname, ttl, master_backup = value
 
       # hostname
       /\A[0-9a-z\.\-]+\Z/ =~ hostname or invalid_argument
@@ -56,23 +56,22 @@ def parse_args
         invalid_argument
       end
 
-      # Weight
-      weight.nil? or /\A\d+\Z/ =~ weight or invalid_argument
-
       # MASTER or BACKUP
       master_backup.nil? or /\A(master|backup)\Z/i =~ master_backup or invalid_argument
     end # :aliases
 
-    desc 'path of a socket file'
-    option :socket, '-S', '--socket SOCK', :default => '/var/tmp/murakumo.sock'
-
     desc 'ip address of a default resolver'
-    option :resolver, '-r', '--resolver IP'  do |value|
+    option :resolver, nil, '--resolver IP'  do |value|
       /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ value or invalid_argument
     end
 
     desc 'path of a socket file'
-    option :socket, '-S', '--socket PATH', :default => '/var/tmp/murakumo.sock'
+    option :socket, nil, '--socket PATH', :default => '/var/tmp/murakumo.sock'
+
+    desc 'maximum number of the IP address returned as a response'
+    option :max_ip_num, nil, '--max-ip-number NUM', :type => Integer, :default => 8 do |value|
+      invalid_argument if value < 1
+    end
 
     desc 'command of daemonize: {start|stop|restart|status}'
     option :daemon, '-d', '--daemon CMD', :type => [:start, :stop, :restart, :status]
@@ -104,13 +103,12 @@ def parse_args
 
       # aliases
       options[:aliases] = (options[:aliases] || []).map do |r|
-        [nil, 60, 100, 'master'].each_with_index {|v, i| r[i] ||= v }
+        [nil, 60, 'master'].each_with_index {|v, i| r[i] ||= v }
 
         [
           r[0],      # name
           r[1].to_i, # TTL
-          r[2].to_i, # Weight
-          ((/master/i =~ r[3]) ? Murakumo::MASTER : Murakumo::BACKUP),
+          ((/master/i =~ r[2]) ? Murakumo::MASTER : Murakumo::BACKUP),
         ]
       end
 
