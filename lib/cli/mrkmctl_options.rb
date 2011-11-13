@@ -16,7 +16,7 @@ def parse_args
       hostname, ttl, master_backup = value
 
       # hostname
-      /\A[0-9a-z\.\-]+\Z/ =~ hostname or invalid_argument
+      /\A[0-9a-z\.\-]+\Z/i =~ hostname or invalid_argument
 
       # TTL
       unless ttl.nil? or (/\A\d+\Z/ =~ ttl and ttl.to_i > 0)
@@ -33,13 +33,17 @@ def parse_args
     end
 
     desc 'adds a node'
-    option :add_node, nil, '--add-node IP_ADDR', :multiple => true do |v|
-      # XXX:
+    option :add_node, nil, '--add-node HOST', :multiple => true do |value|
+      unless [/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/, /\A[0-9a-z\.\-]+\Z/i].any? {|i| i =~ value }
+        invalid_argument
+      end
     end
 
     desc 'deletes a node'
-    option :delete_node, nil, '--delete-node IP_ADDR', :multiple => true do |v|
-      # XXX:
+    option :delete_node, nil, '--delete-node HOST', :multiple => true do |value|
+      unless [/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/, /\A[0-9a-z\.\-]+\Z/i].any? {|i| i =~ value }
+        invalid_argument
+      end
     end
 
     desc 'sets an attribute: name=value'
@@ -60,6 +64,13 @@ def parse_args
             r[1].to_i, # TTL
             ((/master/i =~ r[2].to_s) ? Murakumo::MASTER : Murakumo::BACKUP),
           ]
+        end
+      end
+
+      # 一応、uniq
+      [:delete, :add_node, :delete_node].each do |key|
+        if options[key]
+          options[key] = options[key].uniq
         end
       end
 

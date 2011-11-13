@@ -35,7 +35,7 @@ def parse_args
       /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ ip_addr or invalid_argument
 
       # hostname
-      /\A[0-9a-z\.\-]+\Z/ =~ hostname or invalid_argument
+      /\A[0-9a-z\.\-]+\Z/i =~ hostname or invalid_argument
 
       # TTL
       unless ttl.nil? or (/\A\d+\Z/ =~ ttl and ttl.to_i > 0)

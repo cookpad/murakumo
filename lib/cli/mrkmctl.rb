@@ -5,38 +5,55 @@ require 'misc/murakumo_const'
 
 # オプションをパース
 options = parse_args
-p options
 
+# リモートオブジェクトを生成
 there = DRbObject.new_with_uri("drbunix:#{options[:socket]}")
 
 cmd, arg = options[:command]
 
-case cmd
+# 各コマンドの処理
+begin
+  case cmd
+  # 一覧表示
+  when :list
+    records = if arg.kind_of?(String)
+                # 引数がある場合はフィルタリング
+                there.list_records.select {|r| r[0..1].any?{|i| i.start_with?(arg) } }
+              else
+                there.list_records
+              end
 
-when :list
-  records = if arg.kind_of?(String)
-              # 引数がある場合はフィルタリング
-              there.list_records.select {|r| r[0..1].any?{|i| i.start_with?(arg) } }
-            else
-              there.list_records
-            end
-
-  puts <<-EOF
+    puts <<-EOF
 IP address       TTL     Priority  Activity  Hostname
 ---------------  ------  --------  --------  ----------
-  EOF
-  records.each do |r|
-    r[3] = (r[3] == Murakumo::ORIGIN ? 'Origin' : r[3] == Murakumo::MASTER ? 'Master' : 'Backup')
-    r[4] = (r[4] == Murakumo::ACTIVE ? 'Active' : 'Inactive')
-    puts '%-15s  %6d  %-8s  %-8s  %s' % r.values_at(0, 2, 3, 4, 1)
+    EOF
+    records.each do |r|
+      r[3] = (r[3] == Murakumo::ORIGIN ? 'Origin' : r[3] == Murakumo::MASTER ? 'Master' : 'Backup')
+      r[4] = (r[4] == Murakumo::ACTIVE ? 'Active' : 'Inactive')
+      puts '%-15s  %6d  %-8s  %-8s  %s' % r.values_at(0, 2, 3, 4, 1)
+    end
+
+  # レコードの追加・更新
+  when :add
+    is_success, errmsg = there.add_or_rplace_records(arg)
+    is_success or raise(errmsg)
+
+  # レコードの削除
+  when :delete
+    is_success, errmsg = there.delete_records(arg)
+    is_success or raise(errmsg)
+
+  # ノードの追加
+  when :add_node
+    is_success, errmsg = there.add_nodes(arg)
+    is_success or raise(errmsg)
+
+  # ノードの削除
+  when :delete_node
+    is_success, errmsg = there.delete_nodes(arg)
+    is_success or raise(errmsg)
+
   end
-
-when :add
-  is_success, errmsg = there.add_or_rplace_records(arg)
-  $stderr.puts(errmsg) unless is_success
-
-when :delete
-  is_success, errmsg = there.delete_records(arg)
-  $stderr.puts(errmsg) unless is_success
-
+rescue => e
+  $stderr.puts "error: #{e.message}"
 end

@@ -94,7 +94,7 @@ module Murakumo
           if names.any? {|n| n == d[0] }
             if d[2] == ORIGIN
               # オリジンは削除不可
-              errmsg = 'error: original host name cannot be deleted'
+              errmsg = 'original host name cannot be deleted'
               names.reject! {|n| n == d[0] }
               false
             else
@@ -110,6 +110,26 @@ module Murakumo
       return [!errmsg, errmsg]
     end
 
+    def add_nodes(nodes)
+      errmsg = nil
+
+      nodes.each do |i|
+        @gossip.add_node(i)
+      end
+
+      return [!errmsg, errmsg]
+    end
+
+    def delete_nodes(nodes)
+      errmsg = nil
+
+      nodes.each do |i|
+        @gossip.delete_node(i)
+      end
+
+      return [!errmsg, errmsg]
+    end
+
     def close
       # データベースをクローズ
       @db.close
@@ -118,6 +138,8 @@ module Murakumo
     # Operation of storage 
 
     def update(address, datas, update_only = false)
+      return unless datas
+
       datas.each do |i|
         @db.execute(<<-EOS, address, *i)
           REPLACE INTO records (ip_address, name, ttl, priority, activity)
