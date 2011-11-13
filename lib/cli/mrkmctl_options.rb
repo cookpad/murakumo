@@ -58,7 +58,7 @@ def parse_args
       Murakumo::ATTRIBUTES.keys.include?(name.to_sym) or invalid_argument
 
       if name == 'log_level'
-        %w(debug info warn error fatal).include?(value) or invalid_argument
+        %w(debug info warn error fatal).include?(val) or invalid_argument
       end
     end
 
