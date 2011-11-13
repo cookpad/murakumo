@@ -66,6 +66,19 @@ module Murakumo
         :max_ip_num    => 'max-ip-number',
         :log_path      => 'log-path',
         :log_level     => 'log-level',
+        :gossip_port   => 'gossip-port',
+        :gossip_node_lifetime => lambda {|v| [
+          'gossip-node-lifetime',
+          @gossip.context.node_lifetime
+        ]},
+        :gossip_send_interval => lambda {|v| [
+          'gossip-send-interval',
+          @gossip.context.gossip_interval
+        ]},
+        :gossip_receive_timeout => lambda {|v| [
+          'gossip-receive-timeout',
+          @gossip.context.receive_timeout
+        ]},
       }
 
       hash = {}
