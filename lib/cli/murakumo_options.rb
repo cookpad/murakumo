@@ -115,9 +115,10 @@ def parse_args
       options[:host][2] = (options[:host][2] || 60).to_i # TTL
 
       # aliases
-      config_file_aliases = options.config_file and options.config_file['alias']
+      config_file_aliases = options.config_file ? options.config_file['alias'] : nil
 
       if config_file_aliases
+        p config_file_aliases
         if config_file_aliases.kind_of?(Array)
           options[:aliases] = config_file_aliases.map {|i| i.split(',') }
         else
