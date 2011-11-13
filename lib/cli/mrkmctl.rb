@@ -26,11 +26,17 @@ IP address       TTL     Priority  Activity  Hostname
 ---------------  ------  --------  --------  ----------
   EOF
   records.each do |r|
-    r[3] = (r[3] == Murakumo::MASTER ? 'Master' : 'Backup')
-    r[4] = (r[4] == Murakumo::ORIGIN ? 'Origin' : r[4] == Murakumo::ACTIVE ? 'Active' : 'Inactive')
+    r[3] = (r[3] == Murakumo::ORIGIN ? 'Origin' : r[3] == Murakumo::MASTER ? 'Master' : 'Backup')
+    r[4] = (r[4] == Murakumo::ACTIVE ? 'Active' : 'Inactive')
     puts '%-15s  %6d  %-8s  %-8s  %s' % r.values_at(0, 2, 3, 4, 1)
   end
 
 when :add
-  there.add_or_rplace_records(arg)
+  is_success, errmsg = there.add_or_rplace_records(arg)
+  $stderr.puts(errmsg) unless is_success
+
+when :delete
+  is_success, errmsg = there.delete_records(arg)
+  $stderr.puts(errmsg) unless is_success
+
 end

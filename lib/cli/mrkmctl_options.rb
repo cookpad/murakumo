@@ -28,8 +28,8 @@ def parse_args
     end
 
     desc 'deletes a record'
-    option :delete, '-D', '--delete NAME', :multiple => true do |v|
-      # XXX:
+    option :delete, '-D', '--delete NAME', :multiple => true do |value|
+      /\A[0-9a-z\.\-]+\Z/ =~ value or invalid_argument
     end
 
     desc 'adds a node'

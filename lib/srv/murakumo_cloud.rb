@@ -58,25 +58,21 @@ module Murakumo
     end
 
     def add_or_rplace_records(records)
+      errmsg = nil
+
       @gossip.transaction do
-        origin_name = nil
 
         # 既存のホスト名は削除
         @gossip.data.reject! do |d|
           if records.any? {|r| r[0] == d[0] }
+            # オリジンのPriorityは変更不可
             if d[2] == ORIGIN
-              # オリジナルのホスト名は更新不可
-              warn('original host name cannot be updated')
-              origin_name = d[0]
-              false
-            else
-              true
+              records.each {|r| r[2] = ORIGIN if r[0] == d[0] }
             end
+
+            true
           end
         end
-
-        # オリジナルのホスト名を更新データから削除
-        records.reject! {|r| r[0] == origin_name } if origin_name
 
         # データを更新
         records = records.map {|r| r + [ACTIVE] }
@@ -85,6 +81,33 @@ module Murakumo
 
       # データベースを更新
       update(@address, records, true)
+
+      return [!errmsg, errmsg]
+    end
+
+    def delete_records(names)
+      errmsg = nil
+
+      @gossip.transaction do
+        # データを削除
+        @gossip.data.reject! do |d|
+          if names.any? {|n| n == d[0] }
+            if d[2] == ORIGIN
+              # オリジンは削除不可
+              errmsg = 'error: original host name cannot be deleted'
+              names.reject! {|n| n == d[0] }
+              false
+            else
+              true
+            end
+          end
+        end
+      end # transaction
+
+      # データベースを更新
+      delete_by_names(@address, names)
+
+      return [!errmsg, errmsg]
     end
 
     def close
@@ -115,6 +138,15 @@ module Murakumo
 
     def delete(address)
       @db.execute('DELETE FROM records WHERE ip_address = ?', address)
+    end
+
+    def delete_by_names(address, names)
+      names = names.map {|i| "'#{i}'" }.join(',')
+
+      @db.execute(<<-EOS, address)
+        DELETE FROM records
+        WHERE ip_address = ? AND name IN (#{names})
+      EOS
     end
 
     # Search of records
