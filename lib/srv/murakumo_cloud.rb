@@ -2,12 +2,17 @@ require 'forwardable'
 require 'rgossip2'
 require 'sqlite3'
 
+require 'srv/murakumo_health_checker'
 require 'misc/murakumo_const'
 
 module Murakumo
 
   class Cloud
     extend Forwardable
+
+    attr_reader :address
+    attr_reader :gossip
+    attr_reader :db
 
     def initialize(options)
       # オプションはインスタンス変数に保存
@@ -46,7 +51,12 @@ module Murakumo
         end
       end
 
-      # XXX: ヘルスチェックの実装
+      # ヘルスチェック
+      if options.config_file and options.config_file['health-check']
+        health_check = options.config_file['health-check']
+        @health_checker = HealthChecker.new(self, options[:logger], health_check)
+        @health_checker.start
+      end
     end
 
     # Control of service
@@ -102,6 +112,10 @@ module Murakumo
       end
 
       hash['alias'] = aliases unless aliases.empty?
+
+      if @options.config_file and @options.config_file['health-check']
+        hash['health-check'] = @options.config_file['health-check']
+      end
 
       return hash
     end
