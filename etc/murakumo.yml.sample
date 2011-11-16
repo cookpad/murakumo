@@ -1,0 +1,34 @@
+---
+# configuration of dns 
+address: 0.0.0.0
+port: 53
+
+# Ip address, hostname, ttl
+host: 10.11.12.13,my-host,60
+
+# alias hostname, ttl, master/backup
+alias: 
+  - foo,60,master
+  - bar,60,master
+
+auth-key: onion
+log-level: info
+resolver: 8.8.8.8
+max-ip-num: 8
+
+health-check:
+  foo:
+    interval: 5
+    timeout: 5
+    healthy: 10
+    unhealthy: 2
+    script: |
+      tcp_check 80
+  bar:
+    interval: 5
+    timeout: 5
+    healthy: 10
+    unhealthy: 2
+    script: |
+      tcp_check 80
+

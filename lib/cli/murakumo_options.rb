@@ -72,7 +72,7 @@ def parse_args
     option :socket, '-S', '--socket PATH', :default => '/var/tmp/murakumo.sock'
 
     desc 'maximum number of the IP address returned as a response'
-    option :max_ip_num, '-n', '--max-ip-number NUM', :type => Integer, :default => 8 do |value|
+    option :max_ip_num, '-n', '--max-ip-num NUM', :type => Integer, :default => 8 do |value|
       invalid_argument if value < 1
     end
 

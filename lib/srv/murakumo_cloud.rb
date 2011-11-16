@@ -90,7 +90,7 @@ module Murakumo
           v.instance_variable_get(:@config).instance_variable_get(:@config_info)[:nameserver]
         ]},
         :socket        => 'socket',
-        :max_ip_num    => 'max-ip-number',
+        :max_ip_num    => 'max-ip-num',
         :log_path      => 'log-path',
         :log_level     => 'log-level',
         :gossip_port   => 'gossip-port',
