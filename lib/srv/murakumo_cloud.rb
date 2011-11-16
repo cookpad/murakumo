@@ -24,15 +24,22 @@ module Murakumo
       host_data.concat [ORIGIN, ACTIVE]
       alias_datas = options[:aliases].map {|r| r + [ACTIVE] }
 
+      # 名前は小文字に変換
+      datas = ([host_data] + alias_datas).map do |i|
+        name, ttl, priority, activity = i
+        name = name.downcase
+        [name, ttl, priority, activity]
+      end
+
       # データベースを作成してレコードを更新
       create_database
-      update(@address, [host_data] + alias_datas)
+      update(@address, datas)
 
       # ゴシップオブジェクトを生成
       @gossip = RGossip2.client({
         :initial_nodes   => options[:initial_nodes],
         :address         => @address,
-        :data            => [host_data] + alias_datas,
+        :data            => datas,
         :auth_key        => options[:auth_key],
         :port            => options[:gossip_port],
         :node_lifetime   => options[:gossip_node_lifetime],
@@ -141,6 +148,13 @@ module Murakumo
     def add_or_rplace_records(records)
       errmsg = nil
 
+      # 名前は小文字に変換
+      records = records.map do |i|
+        name, ttl, priority = i
+        name = name.downcase
+        [name, ttl, priority]
+      end
+
       @gossip.transaction do
 
         # 既存のホスト名は削除
@@ -177,6 +191,9 @@ module Murakumo
 
     def delete_records(names)
       errmsg = nil
+
+      # 名前は小文字に変換
+      names = names.map {|i| i.downcase }
 
       @gossip.transaction do
         # データを削除
@@ -269,7 +286,12 @@ module Murakumo
       return unless datas
 
       datas.each do |i|
-        @db.execute(<<-EOS, address, *i)
+        name, ttl, priority, activity = i
+
+        # 名前は小文字に変換
+        name = name.downcase
+
+        @db.execute(<<-EOS, address, name, ttl, priority, activity)
           REPLACE INTO records (ip_address, name, ttl, priority, activity)
           VALUES (?, ?, ?, ?, ?)
         EOS
@@ -277,7 +299,7 @@ module Murakumo
 
       # データにないレコードは消す
       unless update_only
-        names = datas.map {|i| "'#{i.first}'" }.join(',')
+        names = datas.map {|i| "'#{i.first.downcase}'" }.join(',')
 
         @db.execute(<<-EOS, address)
           DELETE FROM records
@@ -291,7 +313,7 @@ module Murakumo
     end
 
     def delete_by_names(address, names)
-      names = names.map {|i| "'#{i}'" }.join(',')
+      names = names.map {|i| "'#{i.downcase}'" }.join(',')
 
       @db.execute(<<-EOS, address)
         DELETE FROM records
@@ -302,6 +324,9 @@ module Murakumo
     # Search of records
 
     def address_exist?(name)
+      # 名前は小文字に変換
+      name = name.downcase
+
       # シングルスレッドェ…
       @address_records = @db.execute(<<-EOS, name, ACTIVE)
         SELECT ip_address, ttl, priority FROM records

@@ -9,7 +9,8 @@ module Murakumo
   class HealthChecker
 
     def initialize(name, cloud, logger, options)
-      @name = name
+      # 名前は小文字に変換
+      @name = name.downcase
       @cloud = cloud
       @logger = logger
 

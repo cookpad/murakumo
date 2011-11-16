@@ -70,4 +70,5 @@ IP address       TTL     Priority  Activity  Hostname
   end
 rescue => e
   $stderr.puts "error: #{e.message}"
+  $stderr.puts e.backtrace
 end
