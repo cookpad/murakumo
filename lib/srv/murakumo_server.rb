@@ -23,6 +23,10 @@ module Murakumo
         @@cloud = Cloud.new(options)
       end
 
+      def pid_directory=(path)
+        @@pid_directory = path
+      end
+
       def run
         RubyDNS.run_server(:listen => [[:udp, @@options[:dns_address], @@options[:dns_port]]]) do
           # RubyDNS::Serverのコンテキスト
