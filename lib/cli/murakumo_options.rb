@@ -62,8 +62,10 @@ def parse_args
     end # :aliases
 
     desc 'ip address of a default resolver'
-    option :resolver, '-r', '--resolver IP'  do |value|
-      /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ value or invalid_argument
+    option :resolver, '-r', '--resolver IP_LIST', :type => Array  do |value|
+      unless value.all? {|i| /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ i }
+        invalid_argument
+      end
     end
 
     desc 'path of a socket file'
