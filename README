@@ -1,0 +1,57 @@
+= Murakumo
+
+== Description
+
+Murakumo is the internal DNS server which manages name information using a gossip protocol.
+
+== Source Code
+
+https://bitbucket.org/winebarrel/murakumo
+
+== Dependency
+
+* RubyDNS
+* SQLite
+* MessagePack
+
+== Install
+
+  gem install murakumo
+  cp /usr/local/lib/ruby/gems/1.8/gems/murakumo-*/etc/murakumo.server /etc/init.d/murakumo
+  chmod 755 /etc/init.d/murakumo
+  /etc/init.d/murakumo start
+
+== Example
+=== display of a list of a record
+
+  shell> mrkmctl -L
+  IP address       TTL     Priority  Activity  Hostname
+  ---------------  ------  --------  --------  ----------
+  10.11.12.13          60  Origin    Active    my-host
+
+=== addition of a record 
+
+  shell> mrkmctl -A foo.bar,300,master
+  shell> mrkmctl -L
+  IP address       TTL     Priority  Activity  Hostname
+  ---------------  ------  --------  --------  ----------
+  10.11.12.13          60  Origin    Active    dev-01
+  10.11.12.13         300  Master    Active    foo.bar
+
+=== deletion of a record 
+
+  shell> mrkmctl -D foo.bar
+  shell> mrkmctl -L
+  IP address       TTL     Priority  Activity  Hostname
+  ---------------  ------  --------  --------  ----------
+  10.11.12.13          60  Origin    Active    my-host
+
+=== addition of a node
+
+  shell> mrkmctl -a 10.11.12.14
+  shell> mrkmctl -L
+  IP address       TTL     Priority  Activity  Hostname
+  ---------------  ------  --------  --------  ----------
+  10.11.12.13          60  Origin    Active    my-host
+  10.11.12.14          60  Origin    Active    other-host
+
