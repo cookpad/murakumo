@@ -87,7 +87,7 @@ module Murakumo
         :initial_nodes => lambda {|v| ['initial-nodes', v.join(',')] },
         :resolver      => lambda {|v| [
           'resolver',
-          v.instance_variable_get(:@config).instance_variable_get(:@config_info)[:nameserver]
+          v.instance_variable_get(:@config).instance_variable_get(:@config_info)[:nameserver].join(',')
         ]},
         :socket        => 'socket',
         :max_ip_num    => 'max-ip-num',
@@ -113,11 +113,13 @@ module Murakumo
       keys.each do |k, name|
         value = @options[k]
 
-        if name.respond_to?(:call)
+        if value and name.respond_to?(:call)
           name, value = name.call(value)
         end
 
-        hash[name] = value if value
+        if value and (not value.kind_of?(String) or not value.empty?)
+          hash[name] = value
+        end
       end
 
       records = list_records

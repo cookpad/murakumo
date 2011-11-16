@@ -106,6 +106,7 @@ def parse_args
     after do |options|
       # resolver
       if options[:resolver]
+        options[:resolver] = options[:resolver].map {|i| i.strip }
         options[:resolver] = Resolv::DNS.new(:nameserver => options[:resolver])
       end
 

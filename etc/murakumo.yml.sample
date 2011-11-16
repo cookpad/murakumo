@@ -3,18 +3,18 @@
 address: 0.0.0.0
 port: 53
 
+auth-key: onion
+log-level: info
+resolver: 8.8.8.8
+max-ip-num: 8
+
 # Ip address, hostname, ttl
-host: 10.11.12.13,my-host,60
+host: 10.11.12.13, my-host, 60
 
 # alias hostname, ttl, master/backup
 alias: 
   - foo,60,master
   - bar,60,master
-
-auth-key: onion
-log-level: info
-resolver: 8.8.8.8
-max-ip-num: 8
 
 health-check:
   foo:
@@ -30,5 +30,4 @@ health-check:
     healthy: 10
     unhealthy: 2
     script: |
-      tcp_check 80
-
+      http_get 'index.html'

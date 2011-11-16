@@ -1,0 +1,88 @@
+#!/bin/sh
+# chkconfig: 345 64 36
+# description: the internal DNS server which manages name information using a gossip protocol.
+# processname: /usr/local/bin/murakumo
+# config: /etc/murakumo.yml
+
+prog=/usr/local/bin/murakumo
+ctlprog=/usr/local/bin/mrkmctl
+conf=/etc/murakumo.yml
+
+if [ "$1" != "configure"  -a ! -e "$conf" ]; then
+  echo "configuration file is not found: $conf"
+  exit 1
+fi
+
+case "$1" in
+start)
+  $prog -c $conf -d start
+  ;;
+stop)
+  $prog -c $conf -d stop
+  ;;
+status)
+  $prog -c $conf -d status
+  ;;
+restart)
+  $prog -c $conf -d restart
+  ;;
+save)
+  $ctlprog -y > ${conf}.new
+
+  if [ $? -eq 0 ]; then
+    cp ${conf}.new $conf
+    echo "configuration file was updated: $conf" 
+  fi
+
+  rm -f ${conf}.new
+  ;;
+configure)
+  if [ -e "$conf" ]; then
+    echo "configuration file already exists."
+    exit 1
+  fi
+
+  bind_addr=0.0.0.0
+  ip_addr=`/sbin/ifconfig eth0 | awk -F'[: ]+' '/inet/{print $4}'`
+  resolver=`grep nameserver /etc/resolv.conf | head -n 1 | awk '{print $2}'`
+
+  cat <<EOF > $conf
+---
+address: $bind_addr
+port: 53
+
+auth-key: onion
+log-level: :info
+resolver: $resolver, 8.8.8.8
+max-ip-number: 8
+
+host: $ip_addr, dev-01,60
+
+#alias:
+#  - foo,60,master
+#  - bar,60,backup
+
+#health-check:
+#  foo:
+#    interval: 5
+#    timeout: 5
+#    healthy: 2
+#    unhealthy: 2
+#    script: |
+#      tcp_check 80
+#  bar:
+#    interval: 5
+#    timeout: 5
+#    healthy: 2
+#    unhealthy: 2
+#    script: |
+#      http_get 'index.html'
+EOF
+
+  echo "configuration file was created: $conf"
+  echo -e "\033[0;31mPlease set 127.0.0.1 to resolv.conf.\033[0;39m" 
+  ;;
+*)
+  echo $"Usage: $0 {start|stop|restart|status|save|configureh}"
+  exit 1
+esac
