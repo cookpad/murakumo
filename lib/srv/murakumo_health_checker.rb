@@ -70,7 +70,7 @@ module Murakumo
       @unhealthy_count = 0
 
       status = @normal_health ? 'healthy' : 'unhealthy'
-      @logger.info("health condition changed: #{status}")
+      @logger.info("health condition changed: #{@name}: #{status}")
     end
 
     def start
@@ -105,7 +105,7 @@ module Murakumo
             end
 
             status = retval == true ? 'good' : retval == false ? 'bad' : '-'
-            @logger.debug("result of a health check: #{status}")
+            @logger.debug("result of a health check: #{@name}: #{status}")
 
             if retval == true
               good
@@ -117,7 +117,7 @@ module Murakumo
           end # while
         rescue Exception => e
           message = (["#{e.class}: #{e.message}"] + (e.backtrace || [])).join("\n\tfrom ")
-          @logger.error(message)
+          @logger.error("#{@name}: #{message}")
         end # begin
       }
     end

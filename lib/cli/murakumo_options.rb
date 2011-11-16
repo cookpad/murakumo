@@ -120,7 +120,6 @@ def parse_args
       config_file_aliases = options.config_file ? options.config_file['alias'] : nil
 
       if config_file_aliases
-        p config_file_aliases
         if config_file_aliases.kind_of?(Array)
           options[:aliases] = config_file_aliases.map {|i| i.split(',') }
         else
