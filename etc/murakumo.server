@@ -45,7 +45,13 @@ configure)
   bind_addr=0.0.0.0
   ip_addr=`/sbin/ifconfig eth0 | awk -F'[: ]+' '/inet/{print $4}'`
   hostname=`hostname`
-  resolver=`grep nameserver /etc/resolv.conf | head -n 1 | awk '{print $2}'`
+  resolver=`grep nameserver /etc/resolv.conf | fgrep -v 127.0.0.1 | head -n 1 | awk '{print $2}'`
+
+  if [ -n "$resolver" ]; then
+    resolver="$resolver, 8.8.8.8"
+  else
+    resolver="8.8.8.8"
+  fi
 
   cat <<EOF > $conf
 ---
@@ -53,8 +59,8 @@ address: $bind_addr
 port: 53
 
 auth-key: onion
-log-level: :info
-resolver: $resolver, 8.8.8.8
+log-level: info
+resolver: $resolver
 max-ip-number: 8
 
 host: $ip_addr, $hostname, 60
@@ -77,7 +83,7 @@ host: $ip_addr, $hostname, 60
 #    healthy: 2
 #    unhealthy: 2
 #    script: |
-#      http_get 'index.html'
+#      http_get '/index.html'
 EOF
 
   echo "configuration file was created: $conf"
