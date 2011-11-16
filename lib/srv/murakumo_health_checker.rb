@@ -54,7 +54,10 @@ module Murakumo
       activity = (@normal_health ? ACTIVE : INACTIVE)
 
       @cloud.gossip.transaction do
-        @cloud.gossip.data.each {|i| i[3] = activity }
+        @cloud.gossip.data.each do |i|
+          # 名前の一致するデータを更新
+          i[3] = activity if i[0] == @name
+        end
       end
 
       @cloud.db.execute(<<-EOS, activity, @cloud.address, @name)
