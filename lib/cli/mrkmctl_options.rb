@@ -4,7 +4,7 @@ require 'misc/murakumo_const'
 
 Version = '0.1.0'
 
-def parse_args
+def mrkmctl_parse_args
   optopus do
     desc 'displays a list of a record'
     option :list, '-L', '--list [NAME]'

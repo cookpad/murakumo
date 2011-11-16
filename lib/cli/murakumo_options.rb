@@ -7,7 +7,7 @@ require 'misc/murakumo_const'
 
 Version = '0.1.0'
 
-def parse_args
+def murakumo_parse_args
   optopus do
     desc 'key for authentication (required)'
     option :auth_key, '-K', '--auth-key STRING', :required => true

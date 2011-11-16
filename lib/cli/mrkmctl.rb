@@ -5,7 +5,7 @@ require 'cli/mrkmctl_options'
 require 'misc/murakumo_const'
 
 # オプションをパース
-options = parse_args
+options = mrkmctl_parse_args
 
 # リモートオブジェクトを生成
 there = DRbObject.new_with_uri("drbunix:#{options[:socket]}")

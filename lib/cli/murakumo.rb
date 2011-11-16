@@ -2,7 +2,7 @@ require 'cli/murakumo_options'
 require 'srv/murakumo_server'
 
 # オプションをパース
-options = parse_args
+options = murakumo_parse_args
 
 # サーバの初期化
 Murakumo::Server.init(options)
