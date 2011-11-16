@@ -19,6 +19,7 @@ https://bitbucket.org/winebarrel/murakumo
   gem install murakumo
   cp /usr/local/lib/ruby/gems/1.8/gems/murakumo-*/etc/murakumo.server /etc/init.d/murakumo
   chmod 755 /etc/init.d/murakumo
+  /etc/init.d/murakumo configure
   /etc/init.d/murakumo start
 
 == Example
