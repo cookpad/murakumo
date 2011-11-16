@@ -52,10 +52,20 @@ module Murakumo
       end
 
       # ヘルスチェック
+      @health_checkers = {}
+
       if options.config_file and options.config_file['health-check']
         health_check = options.config_file['health-check']
-        @health_checker = HealthChecker.new(self, options[:logger], health_check)
-        @health_checker.start
+
+        if health_check.kind_of?(Hash)
+          health_check.each do |name, conf|
+            checker = HealthChecker.new(name, self, options[:logger], conf)
+            @health_checkers[name] = checker
+            checker.start
+          end
+        else
+          options[:logger].warn('configuration of a health check is not right')
+        end
       end
     end
 
@@ -153,6 +163,15 @@ module Murakumo
       # データベースを更新
       update(@address, records, true)
 
+      # ヘルスチェックがあれば開始
+      records.map {|i| i.first }.each do |name|
+        checker = @health_checkers[name]
+
+        if checker and not checker.alive?
+          checker.start
+        end
+      end
+
       return [!errmsg, errmsg]
     end
 
@@ -177,6 +196,12 @@ module Murakumo
 
       # データベースを更新
       delete_by_names(@address, names)
+
+      # ヘルスチェックがあれば停止
+      names.each do |name|
+        checker = @health_checkers[name]
+        checker.stop if checker
+      end
 
       return [!errmsg, errmsg]
     end

@@ -8,7 +8,8 @@ module Murakumo
 
   class HealthChecker
 
-    def initialize(cloud, logger, options)
+    def initialize(name, cloud, logger, options)
+      @name = name
       @cloud = cloud
       @logger = logger
 
@@ -27,13 +28,9 @@ module Murakumo
       }
 
       # スクリプトの読み込み
-      @script = options.fetch('script')
+      @script = options['script']
+      raise "health check script of #{@name} is not found" unless @script
       @script = File.read(script) if File.exists?(@script)
-
-      @alive = true
-      @normal_health = true
-      @healthy_count = 0
-      @unhealthy_count = 0
     end
 
     def good
@@ -60,21 +57,33 @@ module Murakumo
         @cloud.gossip.data.each {|i| i[3] = activity }
       end
 
-      @cloud.db.execute(<<-EOS, activity, @cloud.address)
+      @cloud.db.execute(<<-EOS, activity, @cloud.address, @name)
         UPDATE records SET activity = ?
-        WHERE ip_address = ?
+        WHERE ip_address = ? AND name = ?
       EOS
 
       @healthy_count = 0
       @unhealthy_count = 0
 
-      if @logger
-        status = @normal_health ? 'healthy' : 'unhealthy'
-        @logger.info("health condition changed: #{status}")
-      end
+      status = @normal_health ? 'healthy' : 'unhealthy'
+      @logger.info("health condition changed: #{status}")
     end
 
     def start
+      # 各種変数は初期状態にする
+      @alive = true
+      @normal_health = true
+      @healthy_count = 0
+      @unhealthy_count = 0
+
+      # 既存のスレッドは破棄
+      if @thread and @thread.alive?
+        begin
+          @thread.kill
+        rescue ThreadError
+        end
+      end
+
       @thread = Thread.start {
         healthy = 0
         unhealthy = 0
@@ -91,10 +100,8 @@ module Murakumo
               retval = false
             end
 
-            if @logger
-              status = retval == true ? 'good' : retval == false ? 'bad' : '-'
-              @logger.debug("result of a health check: #{status}")
-            end
+            status = retval == true ? 'good' : retval == false ? 'bad' : '-'
+            @logger.debug("result of a health check: #{status}")
 
             if retval == true
               good
@@ -106,12 +113,7 @@ module Murakumo
           end # while
         rescue Exception => e
           message = (["#{e.class}: #{e.message}"] + (e.backtrace || [])).join("\n\tfrom ")
-
-          if @logger
-            @logger.error(message)
-          else
-            $stderr.puts(message)
-          end
+          @logger.error(message)
         end # begin
       }
     end
