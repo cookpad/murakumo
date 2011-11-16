@@ -44,6 +44,7 @@ configure)
 
   bind_addr=0.0.0.0
   ip_addr=`/sbin/ifconfig eth0 | awk -F'[: ]+' '/inet/{print $4}'`
+  hostname=`hostname`
   resolver=`grep nameserver /etc/resolv.conf | head -n 1 | awk '{print $2}'`
 
   cat <<EOF > $conf
@@ -56,7 +57,7 @@ log-level: :info
 resolver: $resolver, 8.8.8.8
 max-ip-number: 8
 
-host: $ip_addr, dev-01,60
+host: $ip_addr, $hostname, 60
 
 #alias:
 #  - foo,60,master
