@@ -30,4 +30,4 @@ health-check:
     healthy: 10
     unhealthy: 2
     script: |
-      http_get 'index.html'
+      http_get '/index.html'
