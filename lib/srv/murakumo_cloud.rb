@@ -68,7 +68,7 @@ module Murakumo
           health_check.each do |name, conf|
             checker = HealthChecker.new(name, self, options[:logger], conf)
             @health_checkers[name] = checker
-            checker.start
+            # ヘルスチェックはまだ起動しない
           end
         else
           options[:logger].warn('configuration of a health check is not right')
@@ -77,7 +77,17 @@ module Murakumo
     end
 
     # Control of service
-    def_delegators :@gossip, :start, :stop
+    def_delegators :@gossip, :stop
+
+    def start
+      # デーモン化すると子プロセスはすぐ死ぬので
+      # このタイミングでヘルスチェックを起動
+      @health_checkers.each do |name, checker|
+        checker.start
+      end
+
+      @gossip.start
+    end
 
     def to_hash
       keys = {
