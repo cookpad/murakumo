@@ -120,7 +120,7 @@ def parse_args
       config_file_aliases = options.config_file ? options.config_file['alias'] : nil
 
       if config_file_aliases
-        if config_file_aliases.kind_of?(Array)
+       if config_file_aliases.kind_of?(Array)
           options[:aliases] = config_file_aliases.map {|i| i.split(',') }
         else
           options[:aliases] = [options[:aliases]]
@@ -139,6 +139,10 @@ def parse_args
       end
 
       # logger
+      if not options[:log_path] and options[:daemon]
+        options[:log_path] = '/var/log/murakumo.log'
+      end
+
       options[:logger] = Logger.new(options[:log_path] || $stderr)
       options[:logger].level = Logger.const_get(options[:log_level].to_s.upcase)
     end
