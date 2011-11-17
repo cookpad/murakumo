@@ -353,30 +353,26 @@ module Murakumo
 
       if @address_records.length == 1
         # レコードが一件ならそれを返す
-        records = @address_records
-      else
-        # 優先度の高いレコードを検索
-        records = @address_records.select {|i| i['priority'] == MASTER }
-
-        # レコードが見つからなかった場合は優先度の低いレコードを選択
-        if records.empty?
-          records = @address_records.select {|i| i['priority'] == BACKUP }
-        end
-
-        # それでもレコードが見つからなかった場合はオリジンを選択
-        # ※このパスは通らない
-        records = @address_records if records.empty?
+        return @address_records.map {|i| i.values_at('ip_address', 'ttl') }
       end
 
+      # 優先度の高いレコードを検索
+      records = shuffle_records(@address_records.select {|i| i['priority'] == MASTER })
+
+      # 次に優先度の高いレコードを検索
+      records.concat(shuffle_records(@address_records.select {|i| i['priority'] == SECONDARY }))
+
+      # レコードが見つからなかった場合はバックアップを選択
+      if records.empty?
+        records = shuffle_records(@address_records.select {|i| i['priority'] == BACKUP })
+      end
+
+      # それでもレコードが見つからなかった場合はオリジンを選択
+      # ※このパスは通らない
+      records = @address_records if records.empty?
+
       # IPアドレス、TTLを返す
-      records =  records.map {|i| i.values_at('ip_address', 'ttl') }
-
-      # 先頭のAレコードを決定
-      max_ip_num = [records.length, @options[:max_ip_num]].min
-      first_index = rand(max_ip_num);
-
-      # Aレコードを返す
-      (records + records).slice(first_index, max_ip_num)
+      records.map {|i| i.values_at('ip_address', 'ttl') }
     ensure
       # エラー検出のため、一応クリア
       @address_records = nil
@@ -421,6 +417,19 @@ module Murakumo
     end
 
     private
+
+    # 乱数でレコードをシャッフルする
+    def shuffle_records(records)
+      # レコードが一件の時はそのまま返す
+      return records if records.length == 1
+
+      # 先頭のAレコードを決定
+      max_ip_num = [records.length, @options[:max_ip_num]].min
+      first_index = rand(records.length)
+
+      # Aレコードを返す
+      (records + records).slice(first_index, max_ip_num)
+    end
 
     # リソースレコードのデータベース作成
     # もう少し並列処理に強いストレージに変えたいが…
