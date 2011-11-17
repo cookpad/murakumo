@@ -369,7 +369,14 @@ module Murakumo
       end
 
       # IPアドレス、TTLを返す
-      return records.map {|i| i.values_at('ip_address', 'ttl') }
+      records =  records.map {|i| i.values_at('ip_address', 'ttl') }
+
+      # 先頭のAレコードを決定
+      max_ip_num = [records.length, @options[:max_ip_num]].min
+      first_index = rand(max_ip_num);
+
+      # Aレコードを返す
+      (records + records).slice(first_index, max_ip_num)
     ensure
       # エラー検出のため、一応クリア
       @address_records = nil

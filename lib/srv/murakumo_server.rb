@@ -66,12 +66,7 @@ module Murakumo
           match(@@cloud.method(:address_exist?), :A) do |transaction|
             records = @@cloud.lookup_addresses(transaction.name)
 
-            # 先頭のAレコードを決定
-            max_ip_num = [records.length, @@options[:max_ip_num]].min
-            first_index = rand(max_ip_num);
-
-            # Aレコードを返す
-            (records + records).slice(first_index, max_ip_num).each do |r|
+            records.each do |r|
               address, ttl = r
               transaction.respond!(address, :ttl => ttl)
             end
