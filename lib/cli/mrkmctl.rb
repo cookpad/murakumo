@@ -26,12 +26,23 @@ begin
 
     puts <<-EOF
 IP address       TTL     Priority  Activity  Hostname
----------------  ------  --------  --------  ----------
+---------------  ------  ---------  --------  ----------
     EOF
     records.each do |r|
-      r[3] = (r[3] == Murakumo::ORIGIN ? 'Origin' : r[3] == Murakumo::MASTER ? 'Master' : 'Backup')
+      priority = case r[3]
+                 when Murakumo::ORIGIN
+                   'Origin'
+                 when Murakumo::MASTER
+                   'Master'
+                 when Murakumo::SECONDARY
+                   'Secondary'
+                 else
+                   'Backup'
+                 end
+
+      r[3] = priority
       r[4] = (r[4] == Murakumo::ACTIVE ? 'Active' : 'Inactive')
-      puts '%-15s  %6d  %-8s  %-8s  %s' % r.values_at(0, 2, 3, 4, 1)
+      puts '%-15s  %6d  %-9s  %-8s  %s' % r.values_at(0, 2, 3, 4, 1)
     end
 
   # レコードの追加・更新

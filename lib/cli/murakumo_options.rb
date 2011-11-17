@@ -22,6 +22,7 @@ def murakumo_parse_args
 
     desc 'initial node list of gossip protocols'
     option :initial_nodes, '-i', '--initial-nodes IP_LIST', :type => Array, :default => [] do |value|
+      value = value.map {|i| i.strip }
       value.all? {|i| /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ i } or invalid_argument
     end
 
@@ -29,6 +30,7 @@ def murakumo_parse_args
     option :host, '-H', '--host RECORD', :type => Array, :required => true do |value|
       (1 <= value.length and value.length <= 3) or invalid_argument
 
+      value = value.map {|i| i.strip }
       ip_addr, hostname, ttl = value
 
       # ip address
@@ -43,11 +45,12 @@ def murakumo_parse_args
       end
     end # :host
 
-    desc 'resource record of an alias: <hostname>[,<TTL>[,{master|backup}]]'
+    desc 'resource record of an alias: <hostname>[,<TTL>[,{master|secondary|backup}]]'
     option :aliases, '-A', '--alias RECORD', :type => Array, :multiple => true do |value|
       (1 <= value.length and value.length <= 3) or invalid_argument
 
-      hostname, ttl, master_backup = value
+      value = value.map {|i| i.strip }
+      hostname, ttl, priority = value
 
       # hostname
       /\A[0-9a-z\.\-]+\Z/ =~ hostname or invalid_argument
@@ -57,12 +60,14 @@ def murakumo_parse_args
         invalid_argument
       end
 
-      # MASTER or BACKUP
-      master_backup.nil? or /\A(master|backup)\Z/i =~ master_backup or invalid_argument
+      # Priority
+      priority.nil? or /\A(master|secondary|backup)\Z/i =~ priority or invalid_argument
     end # :aliases
 
     desc 'ip address of a default resolver'
     option :resolver, '-r', '--resolver IP_LIST', :type => Array  do |value|
+      value = value.map {|i| i.strip }
+
       unless value.all? {|i| /\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z/ =~ i }
         invalid_argument
       end
@@ -135,10 +140,19 @@ def murakumo_parse_args
         r = r.map {|i| i.to_s.strip }
         [nil, 60, 'master'].each_with_index {|v, i| r[i] ||= v }
 
+        priority = case r[2].to_s
+                   when /master/i
+                     Murakumo::MASTER
+                   when /secondary/i
+                     Murakumo::SECONDARY
+                   else
+                     Murakumo::BACKUP
+                   end
+
         [
           r[0], # name
           r[1].to_i, # TTL
-          ((/master/i =~ r[2].to_s) ? Murakumo::MASTER : Murakumo::BACKUP),
+          priority,
         ]
       end
 

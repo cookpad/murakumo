@@ -9,11 +9,12 @@ def mrkmctl_parse_args
     desc 'displays a list of a record'
     option :list, '-L', '--list [NAME]'
 
-    desc 'adds or updates a record: <hostname>[,<TTL>[,{master|backup}]]'
+    desc 'adds or updates a record: <hostname>[,<TTL>[,{master|secondary|backup}]]'
     option :add, '-A', '--add RECORD', :type => Array, :multiple => true do |value|
       (1 <= value.length and value.length <= 3) or invalid_argument
 
-      hostname, ttl, master_backup = value
+      value = value.map {|i| i.strip }
+      hostname, ttl, priority = value
 
       # hostname
       /\A[0-9a-z\.\-]+\Z/i =~ hostname or invalid_argument
@@ -23,8 +24,8 @@ def mrkmctl_parse_args
         invalid_argument
       end
 
-      # MASTER or BACKUP
-      master_backup.nil? or /\A(master|backup)\Z/i =~ master_backup or invalid_argument
+      # Priority
+      priority.nil? or /\A(master|secondary|backup)\Z/i =~ priority or invalid_argument
     end
 
     desc 'deletes a record'
@@ -75,10 +76,19 @@ def mrkmctl_parse_args
           r = r.map {|i| i ? i.to_s.strip : i }
           [nil, 60, 'master'].each_with_index {|v, i| r[i] ||= v }
 
+          priority = case r[2].to_s
+                     when /master/i
+                       Murakumo::MASTER
+                     when /secondary/i
+                       Murakumo::SECONDARY
+                     else
+                       Murakumo::BACKUP
+                     end
+
           [
             r[0], # name
             r[1].to_i, # TTL
-            ((/master/i =~ r[2].to_s) ? Murakumo::MASTER : Murakumo::BACKUP),
+            priority,
           ]
         end
       end

@@ -1,8 +1,9 @@
 module Murakumo
   # Priority
   MASTER = 1
-  BACKUP = 0
-  ORIGIN = -1
+  SECONDARY = 0
+  BACKUP = -1
+  ORIGIN = -65536
 
   # Activity
   ACTIVE = 1
