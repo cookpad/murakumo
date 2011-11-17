@@ -22,14 +22,14 @@ health-check:
   foo:
     interval: 5
     timeout: 5
-    healthy: 10
+    healthy: 2
     unhealthy: 2
     script: |
       tcp_check 80
   bar:
     interval: 5
     timeout: 5
-    healthy: 10
+    healthy: 2
     unhealthy: 2
     script: |
       http_get '/index.html'
