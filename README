@@ -20,6 +20,7 @@ https://bitbucket.org/winebarrel/murakumo
   chmod 755 /etc/init.d/murakumo
   /etc/init.d/murakumo configure
   /etc/init.d/murakumo start
+  dig @127.0.0.1 <any_hostname>
 
 == Example
 === display of a list of a record
