@@ -16,8 +16,7 @@ https://bitbucket.org/winebarrel/murakumo
 == Install
 
   shell> gem install murakumo
-  shell> cp /usr/local/lib/ruby/gems/1.8/gems/murakumo-*/etc/murakumo.server /etc/init.d/murakumo
-  shell> chmod 755 /etc/init.d/murakumo
+  shell> murakumo-install-init-script
   shell> /etc/init.d/murakumo configure
   shell> /etc/init.d/murakumo start
   shell> dig @127.0.0.1 <any_hostname>

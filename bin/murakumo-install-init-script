@@ -1,0 +1,12 @@
+#!/bin/sh
+MRKM_DIR=murakumo-0.1.4
+INIT_D_DIR=/etc/init.d
+GEM_DIR=`ruby -e 'begin; require "rbconfig"; require "rubygems"; rescue LoadError; end; puts(defined?(Gem) ? "#{Gem.dir}/gems" : defined?(RbConfig) ? RbConfig::CONFIG["rubylibdir"].sub(/\d+\.\d+\Z/) {|m| "gems/#{m}/gems"} : "")'`
+
+if [ -z "$GEM_DIR"  -o ! -e "$GEM_DIR" ]; then
+  echo 'Gem dir is not found.'
+  exit 1
+fi
+
+cp -i $GEM_DIR/$MRKM_DIR/etc/murakumo.server $INIT_D_DIR/murakumo
+chmod 755 $INIT_D_DIR/murakumo
