@@ -74,6 +74,11 @@ IP address       TTL     Priority  Activity  Hostname
     is_success, errmsg = there.set_attr(*arg)
     is_success or raise(errmsg)
 
+  # デッドリストのクリア
+  when :clear_dead_list
+    n = there.clear_dead_list
+    puts "#{n} nodes were deleted"
+
   # 設定の出力
   when :yaml
     puts there.to_hash.to_yaml

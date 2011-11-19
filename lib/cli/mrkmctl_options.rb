@@ -63,7 +63,10 @@ def mrkmctl_parse_args
       end
     end
 
-    desc ' configuration file is outputted by yaml'
+    desc 'clears a dead list'
+    option :clear_dead_list, '-c', '--clear-dead-list'
+
+    desc 'outputs a configuration as yaml'
     option :yaml, '-y', '--yaml'
 
     desc 'path of a socket file'
@@ -110,11 +113,11 @@ def mrkmctl_parse_args
       end
 
       # command
-      commands = [:list, :add, :delete, :add_node, :delete_node, :get, :set, :yaml].map {|k|
+      commands = [:list, :add, :delete, :add_node, :delete_node, :get, :set, :clear_dead_list, :yaml].map {|k|
         [k, options[k]]
       }.select {|i| not i[1].nil? }
 
-      opt_keys = %w(-L -A -D --add-node --delete-node --get --set --yaml)
+      opt_keys = %w(-L -A -D --add-node --delete-node --get --set --clear-dead-list --yaml)
 
       if commands.length < 1
         parse_error('command is not specified', *opt_keys)

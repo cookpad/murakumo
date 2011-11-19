@@ -81,7 +81,7 @@ module Murakumo
     end
 
     # Control of service
-    def_delegators :@gossip, :stop
+    def_delegators :@gossip, :stop, :clear_dead_list
 
     def start
       # デーモン化すると子プロセスはすぐ死ぬので
