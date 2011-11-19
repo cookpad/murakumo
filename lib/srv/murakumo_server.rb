@@ -34,6 +34,9 @@ module Murakumo
 
           on(:start) do
             if @@options[:socket]
+              # 既存のソケットファイルは削除
+              FileUtils.rm_f(@@options[:socket])
+
               # ServerクラスをDRuby化
               DRb.start_service("drbunix:#{@@options[:socket]}", @@cloud)
               at_exit { FileUtils.rm_f(@@options[:socket]) }
