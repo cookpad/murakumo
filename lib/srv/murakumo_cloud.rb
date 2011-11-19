@@ -70,7 +70,7 @@ module Murakumo
 
         if health_check.kind_of?(Hash)
           health_check.each do |name, conf|
-            checker = HealthChecker.new(name, self, options[:logger], conf)
+            checker = HealthChecker.new(name.downcase, self, options[:logger], conf)
             @health_checkers[name] = checker
             # ヘルスチェックはまだ起動しない
           end
@@ -105,6 +105,7 @@ module Murakumo
         ]},
         :socket        => 'socket',
         :max_ip_num    => 'max-ip-num',
+        :domain        => 'domain',
         :log_path      => 'log-path',
         :log_level     => 'log-level',
         :gossip_port   => 'gossip-port',
@@ -342,6 +343,9 @@ module Murakumo
     def address_exist?(name)
       # 名前は小文字に変換
       name = name.downcase
+
+      # ドメインが指定されていたら削除
+      name.sub!(/\.#{Regexp.escape(@options[:domain])}\Z/i, '') if @options[:domain]
 
       # シングルスレッドェ…
       @address_records = @db.execute(<<-EOS, name, ACTIVE)

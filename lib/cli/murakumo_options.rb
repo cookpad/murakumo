@@ -81,6 +81,11 @@ def murakumo_parse_args
       invalid_argument if value < 1
     end
 
+    desc 'suffix of a host name'
+    option :domain, '-b', '--domain DOMAIN' do |value|
+      invalid_argument if (value || '').strip.empty?
+    end
+
     desc 'command of daemonize: {start|stop|restart|status}'
     option :daemon, '-d', '--daemon CMD', :type => [:start, :stop, :restart, :status]
 
