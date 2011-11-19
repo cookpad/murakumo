@@ -49,10 +49,14 @@ module Murakumo
       })
 
       # ノードの更新をフック
-      @gossip.context.callback_handler = lambda do |act, addr, ts, dt|
+      @gossip.context.callback_handler = lambda do |act, addr, ts, dt, old_dt|
         case act
-        when :add, :comeback, :update
+        when :add, :comeback
+          # 追加・復帰の時は無条件に更新
           update(addr, dt)
+        when :update
+          # 更新の時はデータが更新されたときのみ更新
+          update(addr, dt) if dt != old_dt
         when :delete
           delete(addr)
         end
