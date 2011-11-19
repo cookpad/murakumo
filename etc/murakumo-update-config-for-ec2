@@ -23,6 +23,7 @@ fi
 #EC2DIN=$EC2_HOME/bin/ec2-describe-instances
 #HOSTNAME=`$EC2DIN -K $EC2_PRIVATE_KEY -C $EC2_CERT --region $REGION -F "private-ip-address=$IP_ADDR" | awk -F'\t' '$1 == "TAG" && $4 == "Name" {print $5}'`
 
+## gets a host name from meta data.
 HOSTNAME=`$CURL http://169.254.169.254/1.0/meta-data/hostname`
 
 if [ $? -ne 0 -o -z "$HOSTNAME" ]; then
