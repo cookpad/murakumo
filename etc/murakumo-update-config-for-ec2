@@ -7,8 +7,7 @@ if [ $? -ne 0 -o -z "$IP_ADDR" ]; then
 fi
 
 #HOSTNAME=`$CURL http://169.254.169.254/1.0/user-data`
-#HOSTNAME=`$CURL http://169.254.169.254/1.0/meta-data/hostname`
-HOSTNAME=`hostname`
+HOSTNAME=`$CURL http://169.254.169.254/1.0/meta-data/hostname`
 
 if [ $? -ne 0 -o -z "$HOSTNAME" ]; then
   exit 1
