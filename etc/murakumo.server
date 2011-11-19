@@ -13,6 +13,8 @@ if [ "$1" != "configure"  -a ! -e "$conf" ]; then
   exit 1
 fi
 
+#/usr/local/sbin/murakumo-update-config-for-ec2
+
 case "$1" in
 start)
   $prog -c $conf -d start
