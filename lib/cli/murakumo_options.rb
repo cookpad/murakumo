@@ -5,7 +5,7 @@ require 'socket'
 
 require 'misc/murakumo_const'
 
-Version = '0.1.0'
+Version = Murakumo::VERSION
 
 def murakumo_parse_args
   optopus do

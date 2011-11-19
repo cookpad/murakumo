@@ -1,4 +1,6 @@
 module Murakumo
+  VERSION = '0.1.2'
+
   # Priority
   MASTER = 1
   SECONDARY = 0
