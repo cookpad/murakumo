@@ -1,13 +1,12 @@
 --- /sbin/dhclient-script.orig	2011-04-13 07:30:32.000000000 +0900
-+++ /sbin/dhclient-script	2011-11-19 22:58:44.000000000 +0900
-@@ -65,6 +65,11 @@
++++ /sbin/dhclient-script	2011-11-20 00:18:31.000000000 +0900
+@@ -65,6 +65,10 @@
      if [ -n "$RES_OPTIONS" ]; then
        echo options $RES_OPTIONS >> $rscf
      fi
 +    CURRENT_RUN_LEVEL=(`/sbin/runlevel`)
 +    if [ -n "${CURRENT_RUN_LEVEL[1]}" -a ${CURRENT_RUN_LEVEL[1]} -ge 3 ]; then
 +      echo nameserver 127.0.0.1 >> $rscf
-+      #/bin/sh /usr/local/sbin/murakumo-update-config-for-ec2
 +    fi
      for nameserver in $new_domain_name_servers; do
        echo nameserver $nameserver >> $rscf

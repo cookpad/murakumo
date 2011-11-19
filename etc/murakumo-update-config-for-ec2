@@ -1,10 +1,14 @@
 #!/bin/sh
-# chkconfig: 345 10 90
 CURL='curl --retry 3 --retry-delay 0 --silent --fail'
 IP_ADDR=`$CURL http://169.254.169.254/1.0/meta-data/local-ipv4`
+CONF=/etc/murakumo.yml
 
 if [ $? -ne 0 -o -z "$IP_ADDR" ]; then
   exit 1
+fi
+
+if [ `grep ^host $CONF | egrep "host: $IP_ADDR\b" | wc -l` -eq 1 ]; then
+  exit
 fi
 
 ## gets a host name from user data.
