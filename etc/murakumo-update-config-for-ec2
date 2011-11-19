@@ -1,0 +1,17 @@
+#!/bin/sh
+CURL='curl --retry 3 --retry-delay 0 --silent --fail'
+IP_ADDR=`$CURL http://169.254.169.254/1.0/meta-data/local-ipv4`
+
+if [ $? -ne 0 -o -z "$IP_ADDR" ]; then
+  exit 1
+fi
+
+#HOSTNAME=`$CURL http://169.254.169.254/1.0/user-data`
+#HOSTNAME=`$CURL http://169.254.169.254/1.0/meta-data/hostname`
+HOSTNAME=`hostname`
+
+if [ $? -ne 0 -o -z "$HOSTNAME" ]; then
+  exit 1
+fi
+
+sed -i.bak -r "s|^host:.*|host: $IP_ADDR, $HOSTNAME|" /etc/murakumo.yml
