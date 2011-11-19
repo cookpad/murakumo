@@ -1,12 +1,23 @@
-#!/bin/sh
-MRKM_DIR=murakumo-0.1.4
-INIT_D_DIR=/etc/init.d
-GEM_DIR=`ruby -e 'begin; require "rbconfig"; require "rubygems"; rescue LoadError; end; puts(defined?(Gem) ? "#{Gem.dir}/gems" : defined?(RbConfig) ? RbConfig::CONFIG["rubylibdir"].sub(/\d+\.\d+\Z/) {|m| "gems/#{m}/gems"} : "")'`
+#!/usr/bin/env ruby
+MRKM_DIR = 'murakumo-0.1.4'
+INIT_D_DIR = '/etc/init.d'
 
-if [ -z "$GEM_DIR"  -o ! -e "$GEM_DIR" ]; then
-  echo 'Gem dir is not found.'
+begin
+  require 'rbconfig'
+  require 'rubygems'
+rescue LoadError
+end
+
+gem_dir = nil
+
+if defined?(Gem)
+  gem_dir = "#{Gem.dir}/gems"
+elsif defined?(RbConfig)
+  gem_dir = RbConfig::CONFIG["rubylibdir"].sub(/\d+\.\d+\Z/) {|m| "gems/#{m}/gems"}
+else
+  $stderr.puts 'error: gem dir is not found.'
   exit 1
-fi
+end
 
-cp -i $GEM_DIR/$MRKM_DIR/etc/murakumo.server $INIT_D_DIR/murakumo
-chmod 755 $INIT_D_DIR/murakumo
+`cp -i #{gem_dir}/#{MRKM_DIR}/etc/murakumo.server #{INIT_D_DIR}/murakumo`
+`chmod 755 #{INIT_D_DIR}/murakumo`

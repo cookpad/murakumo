@@ -1,5 +1,5 @@
 #!/bin/sh
-# chkconfig: 2345 11 89
+# chkconfig: 345 11 89
 # description: The internal DNS server which manages name information using a gossip protocol.
 # processname: /usr/local/bin/murakumo
 # config: /etc/murakumo.yml
