@@ -168,6 +168,13 @@ def murakumo_parse_args
 
       options[:logger] = Logger.new(options[:log_path] || $stderr)
       options[:logger].level = Logger.const_get(options[:log_level].to_s.upcase)
+
+      # check same hostname
+      hostnames = [options[:host][0].downcase] + options[:aliases].map {|i| i[0].downcase }
+
+      if hostnames.length != hostnames.uniq.length
+        raise OptionParser::ParseError, 'same hostname was found'
+      end
     end
 
     error do |e|
