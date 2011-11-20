@@ -103,6 +103,7 @@ hup)
     echo 'pid is not found.'
     exit 1
   fi
+  ;;
 *)
   echo $"Usage: $0 {start|stop|restart|status|save|configure|hup}"
   exit 1
