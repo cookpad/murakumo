@@ -94,7 +94,16 @@ EOF
   echo "configuration file was created: $conf"
   echo -e "\033[0;31mPlease set 127.0.0.1 to resolv.conf.\033[0;39m" 
   ;;
+hup)
+  PID=`ps -e | awk '$4 ~ /murakumo/ {print $1}'`
+
+  if [ -n "$PID" ]; then
+    kill -HUP $PID
+  else
+    echo 'pid is not found.'
+    exit 1
+  fi
 *)
-  echo $"Usage: $0 {start|stop|restart|status|save|configureh}"
+  echo $"Usage: $0 {start|stop|restart|status|save|configure|hup}"
   exit 1
 esac
