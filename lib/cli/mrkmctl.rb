@@ -17,17 +17,10 @@ begin
   case cmd
   # 一覧表示
   when :list
-    records = if arg.kind_of?(String)
-                # 引数がある場合はフィルタリング
-                there.list_records.select {|r| r[0..1].any?{|i| i.start_with?(arg) } }
-              else
-                there.list_records
-              end
+    # レコードの取得
+    records = there.list_records
 
-    puts <<-EOF
-IP address       TTL     Priority  Activity  Hostname
----------------  ------  ---------  --------  ----------
-    EOF
+    # 値の書き換え
     records.each do |r|
       priority = case r[3]
                  when Murakumo::ORIGIN
@@ -42,6 +35,18 @@ IP address       TTL     Priority  Activity  Hostname
 
       r[3] = priority
       r[4] = (r[4] == Murakumo::ACTIVE ? 'Active' : 'Inactive')
+    end
+
+    if arg.kind_of?(String)
+      # 引数がある場合はフィルタリング（TTLを除く）
+      records = records.select {|r| r.values_at(0, 1, 3, 4).any?{|i| i.to_s.downcase.start_with?(arg.to_s.downcase) } }
+    end
+
+    puts <<-EOF
+IP address       TTL     Priority  Activity  Hostname
+---------------  ------  ---------  --------  ----------
+    EOF
+    records.each do |r|
       puts '%-15s  %6d  %-9s  %-8s  %s' % r.values_at(0, 2, 3, 4, 1)
     end
 
