@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-MRKM_DIR = 'murakumo-0.1.4'
 INIT_D_DIR = '/etc/init.d'
 
 begin
@@ -19,5 +18,5 @@ else
   exit 1
 end
 
-`cp -i #{gem_dir}/#{MRKM_DIR}/etc/murakumo.server #{INIT_D_DIR}/murakumo`
+`cp -i #{gem_dir}/murakumo-*/etc/murakumo.server #{INIT_D_DIR}/murakumo`
 `chmod 755 #{INIT_D_DIR}/murakumo`
