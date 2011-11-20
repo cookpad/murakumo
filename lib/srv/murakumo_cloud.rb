@@ -73,9 +73,16 @@ module Murakumo
 
         if health_check.kind_of?(Hash)
           health_check.each do |name, conf|
-            checker = HealthChecker.new(name.downcase, self, @logger, conf)
-            @health_checkers[name] = checker
-            # ヘルスチェックはまだ起動しない
+            name = name.downcase
+
+            if datas.any? {|i| i[0] == name }
+              checker = HealthChecker.new(name, self, @logger, conf)
+              @health_checkers[name] = checker
+              # ヘルスチェックはまだ起動しない
+            else
+              # ホスト名になかったら警告
+              @logger.warn("host for a health check is not found: #{name}")
+            end
           end
         else
           @logger.warn('configuration of a health check is not right')
