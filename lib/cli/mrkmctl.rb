@@ -39,7 +39,7 @@ begin
 
     if arg.kind_of?(String)
       # 引数がある場合はフィルタリング（TTLを除く）
-      records = records.select {|r| r.values_at(0, 1, 3, 4).any?{|i| i.to_s.downcase.start_with?(arg.to_s.downcase) } }
+      records = records.select {|r| r.values_at(0, 1, 3, 4).any?{|i| i.to_s =~ /\A#{arg.to_s}/i } }
     end
 
     puts <<-EOF
