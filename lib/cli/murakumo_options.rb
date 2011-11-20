@@ -10,7 +10,7 @@ Version = Murakumo::VERSION
 def murakumo_parse_args
   optopus do
     desc 'key for authentication (required)'
-    option :auth_key, '-K', '--auth-key STRING', :required => true
+    option :auth_key, '-K', '--auth-key STRING_OR_PATH', :required => true
 
     desc 'ip address to bind'
     option :dns_address, '-a', '--address IP', :default => '0.0.0.0' do |value|
@@ -114,6 +114,11 @@ def murakumo_parse_args
     option :gossip_receive_timeout, '-O', '--gossip-receive-timeout NUM', :type => Integer, :default => 3
 
     after do |options|
+      # auth_key
+      if File.exist?(options[:auth_key])
+        options[:auth_key] = File.read(options[:auth_key]).strip
+      end
+
       # resolver
       if options[:resolver]
         options[:resolver] = options[:resolver].map {|i| i.strip }
