@@ -95,7 +95,7 @@ EOF
   echo -e "\033[0;31mPlease set 127.0.0.1 to resolv.conf.\033[0;39m" 
   ;;
 hup)
-  PID=` ps -ef | awk '/ruby/ && /murakumo/ && !/awk/{print $2}'`
+  PID=`ps -ef | awk '/ruby/ && /murakumo/ && !/awk/{print $2}'`
 
   if [ -n "$PID" ]; then
     echo "sent HUP to murakumo($PID)."
