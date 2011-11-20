@@ -95,9 +95,10 @@ EOF
   echo -e "\033[0;31mPlease set 127.0.0.1 to resolv.conf.\033[0;39m" 
   ;;
 hup)
-  PID=`ps -e | awk '$4 ~ /murakumo/ {print $1}'`
+  PID=` ps -ef | awk '/ruby/ && /murakumo/ && !/awk/{print $2}'`
 
   if [ -n "$PID" ]; then
+    echo "sent HUP to murakumo($PID)."
     kill -HUP $PID
   else
     echo 'pid is not found.'
