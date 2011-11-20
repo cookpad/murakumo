@@ -13,6 +13,7 @@ module Murakumo
     attr_reader :address
     attr_reader :gossip
     attr_reader :db
+    attr_reader :hostname
 
     def initialize(options)
       # オプションはインスタンス変数に保存
@@ -21,8 +22,10 @@ module Murakumo
       # リソースレコードからホストのアドレスとデータを取り出す
       host_data = options[:host]
       @address = host_data.shift
+      @hostname = host_data.first
       host_data.concat [ORIGIN, ACTIVE]
       alias_datas = options[:aliases].map {|r| r + [ACTIVE] }
+      @logger = options[:logger]
 
       # 名前は小文字に変換
       datas = ([host_data] + alias_datas).map do |i|
@@ -45,7 +48,7 @@ module Murakumo
         :node_lifetime   => options[:gossip_node_lifetime],
         :gossip_interval => options[:gossip_send_interval],
         :receive_timeout => options[:gossip_receive_timeout],
-        :logger          => options[:logger],
+        :logger          => @logger,
       })
 
       # ノードの更新をフック
@@ -70,12 +73,12 @@ module Murakumo
 
         if health_check.kind_of?(Hash)
           health_check.each do |name, conf|
-            checker = HealthChecker.new(name.downcase, self, options[:logger], conf)
+            checker = HealthChecker.new(name.downcase, self, @logger, conf)
             @health_checkers[name] = checker
             # ヘルスチェックはまだ起動しない
           end
         else
-          options[:logger].warn('configuration of a health check is not right')
+          @logger.warn('configuration of a health check is not right')
         end
       end
     end
@@ -307,6 +310,11 @@ module Murakumo
 
         # 名前は小文字に変換
         name = name.downcase
+
+        # ホスト名と同じなら警告
+        if name == @hostname
+          @logger.warn('same hostname as origin was found')
+        end
 
         @db.execute(<<-EOS, address, name, ttl, priority, activity)
           REPLACE INTO records (ip_address, name, ttl, priority, activity)
