@@ -1,4 +1,8 @@
 #!/usr/bin/env ruby
+$: << File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+require 'misc/murakumo_const'
+
 INIT_D_DIR = '/etc/init.d'
 
 begin
@@ -20,7 +24,7 @@ end
 
 bin_dir = ((RbConfig::CONFIG['bindir'] rescue nil) || '').strip
 
-`cp -i #{gem_dir}/murakumo-*/etc/murakumo.server #{INIT_D_DIR}/murakumo`
+`cp -i #{gem_dir}/murakumo-#{Murakumo::VERSION}/etc/murakumo.server #{INIT_D_DIR}/murakumo`
 `chmod 755 #{INIT_D_DIR}/murakumo`
 
 unless bin_dir.empty?
