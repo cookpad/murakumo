@@ -7,7 +7,7 @@ Version = Murakumo::VERSION
 def mrkmctl_parse_args
   optopus do
     desc 'displays a list of a record'
-    option :list, '-L', '--list [NAME]'
+    option :list, '-L', '--list [SEARCH_PHRASE]'
 
     desc 'adds or updates a record: <hostname>[,<TTL>[,{master|secondary|backup}]]'
     option :add, '-A', '--add RECORD', :type => Array, :multiple => true do |value|
