@@ -45,7 +45,7 @@ configure)
   fi
 
   bind_addr=0.0.0.0
-  ip_addr=`/sbin/ifconfig eth0 | awk -F'[: ]+' '/inet/{print $4}'`
+  ip_addr=`/sbin/ifconfig eth0 | awk -F'[: ]+' '/inet addr/{print $4}'`
   hostname=`hostname`
   resolver=`grep nameserver /etc/resolv.conf | fgrep -v 127.0.0.1 | head -n 1 | awk '{print $2}'`
 
