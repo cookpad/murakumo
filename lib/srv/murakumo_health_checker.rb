@@ -101,6 +101,10 @@ module Murakumo
               }
             rescue Timeout::Error
               retval = false
+            rescue => e
+              retval = false
+              message = (["#{e.class}: #{e.message}"] + (e.backtrace || [])).join("\n\tfrom ")
+              @logger.error("healthcheck failed: #{@name}: #{message}")
             end
 
             status = retval == true ? 'good' : retval == false ? 'bad' : '-'

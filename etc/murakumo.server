@@ -38,6 +38,9 @@ save)
 
   rm -f ${conf}.new
   ;;
+configtest)
+  $ctlprog -t $conf
+  ;;
 configure)
   if [ -e "$conf" ]; then
     echo "configuration file already exists."
@@ -108,6 +111,6 @@ hup)
   fi
   ;;
 *)
-  echo $"Usage: $0 {start|stop|restart|status|save|configure|hup}"
+  echo $"Usage: $0 {start|stop|restart|status|save|configtest|configure|hup}"
   exit 1
 esac
