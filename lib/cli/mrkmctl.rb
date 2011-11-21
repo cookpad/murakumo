@@ -2,6 +2,7 @@ require 'drb/drb'
 require 'yaml'
 
 require 'cli/mrkmctl_options'
+require 'cli/murakumo_options'
 require 'misc/murakumo_const'
 
 # オプションをパース
@@ -87,6 +88,14 @@ IP address       TTL     Priority  Activity  Hostname
   when :clear_dead_list
     n = there.clear_dead_list
     puts "#{n} nodes were deleted"
+
+  # 設定のテスト
+  when :configtest
+    conf = arg.kind_of?(String) ? arg : '/etc/murakumo.yml' 
+    ARGV.clear
+    ARGV.concat(['-c', conf])
+    murakumo_parse_args
+    puts 'Syntax OK'
 
   # 設定の出力
   when :yaml

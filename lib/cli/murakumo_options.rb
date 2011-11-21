@@ -5,7 +5,9 @@ require 'socket'
 
 require 'misc/murakumo_const'
 
-Version = Murakumo::VERSION
+unless defined?(Version)
+  Version = Murakumo::VERSION
+end
 
 def murakumo_parse_args
   optopus do
@@ -179,6 +181,13 @@ def murakumo_parse_args
 
       if hostnames.length != hostnames.uniq.length
         raise OptionParser::ParseError, 'same hostname was found'
+      end
+
+      # health check
+      if options.config_file and (health_check = options.config_file['health-check'])
+        unless health_check.kind_of?(Hash)
+          raise OptionParser::ParseError, 'configuration of a health check is not right'
+        end
       end
     end
 
