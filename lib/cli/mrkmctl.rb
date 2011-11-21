@@ -42,12 +42,16 @@ begin
       records = records.select {|r| r.values_at(0, 1, 3, 4).any?{|i| i.to_s =~ /\A#{arg.to_s}/i } }
     end
 
-    puts <<-EOF
+    if records.empty?
+      puts 'No macth'
+    else
+      puts <<-EOF
 IP address       TTL     Priority  Activity  Hostname
 ---------------  ------  ---------  --------  ----------
-    EOF
-    records.each do |r|
-      puts '%-15s  %6d  %-9s  %-8s  %s' % r.values_at(0, 2, 3, 4, 1)
+      EOF
+      records.each do |r|
+        puts '%-15s  %6d  %-9s  %-8s  %s' % r.values_at(0, 2, 3, 4, 1)
+      end
     end
 
   # レコードの追加・更新
