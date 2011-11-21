@@ -18,5 +18,13 @@ else
   exit 1
 end
 
+bin_dir = ((RbConfig::CONFIG['bindir'] rescue nil) || '').strip
+
 `cp -i #{gem_dir}/murakumo-*/etc/murakumo.server #{INIT_D_DIR}/murakumo`
 `chmod 755 #{INIT_D_DIR}/murakumo`
+
+unless bin_dir.empty?
+  `sed -i -r 's|^# processname:.*|# processname: #{bin_dir}/murakumo|' #{INIT_D_DIR}/murakumo`
+  `sed -i -r 's|^prog=.*|prog=#{bin_dir}/murakumo|' #{INIT_D_DIR}/murakumo`
+  `sed -i -r 's|^ctlprog=.*|ctlprog=#{bin_dir}/mrkmctl|' #{INIT_D_DIR}/murakumo`
+end
