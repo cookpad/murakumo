@@ -3,6 +3,7 @@ module Murakumo
 
   # Priority
   MASTER = 1
+  SECONDARY = 0
   BACKUP = -1
   ORIGIN = -65536
 

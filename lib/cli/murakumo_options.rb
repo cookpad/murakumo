@@ -47,7 +47,7 @@ def murakumo_parse_args
       end
     end # :host
 
-    desc 'resource record of an alias: <hostname>[,<TTL>[,{master|backup}]]'
+    desc 'resource record of an alias: <hostname>[,<TTL>[,{master|secondary|backup}]]'
     option :aliases, '-A', '--alias RECORD', :type => Array, :multiple => true do |value|
       (1 <= value.length and value.length <= 3) or invalid_argument
 
@@ -63,7 +63,7 @@ def murakumo_parse_args
       end
 
       # Priority
-      priority.nil? or /\A(master|backup)\Z/i =~ priority or invalid_argument
+      priority.nil? or /\A(master|secondary|backup)\Z/i =~ priority or invalid_argument
     end # :aliases
 
     desc 'ip address of a default resolver'
@@ -155,6 +155,8 @@ def murakumo_parse_args
         priority = case r[2].to_s
                    when /master/i
                      Murakumo::MASTER
+                   when /secondary/i
+                     Murakumo::SECONDARY
                    else
                      Murakumo::BACKUP
                    end

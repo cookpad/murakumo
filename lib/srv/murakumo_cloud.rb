@@ -382,6 +382,9 @@ module Murakumo
       # 優先度の高いレコードを検索
       records = shuffle_records(@address_records.select {|i| i['priority'] == MASTER })
 
+      # 次に優先度の高いレコードを検索
+      records.concat(shuffle_records(@address_records.select {|i| i['priority'] == SECONDARY }))
+
       # レコードが見つからなかった場合はバックアップを選択
       if records.empty?
         records = shuffle_records(@address_records.select {|i| i['priority'] == BACKUP })

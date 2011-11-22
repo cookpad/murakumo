@@ -28,6 +28,8 @@ begin
                    'Origin'
                  when Murakumo::MASTER
                    'Master'
+                 when Murakumo::SECONDARY
+                   'Secondary'
                  else
                    'Backup'
                  end
