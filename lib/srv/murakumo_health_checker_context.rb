@@ -43,7 +43,7 @@ module Murakumo
     rescue LoadError
       begin
         require 'mysql2'
-        mysql_class = Mysql2
+        mysql_class = Mysql2::Client
       rescue LoadError
       end
     end
