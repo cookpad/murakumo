@@ -22,7 +22,6 @@ module Murakumo
       # リソースレコードからホストのアドレスとデータを取り出す
       host_data = options[:host]
       @address = host_data.shift
-      @hostname = host_data.first
       host_data.concat [ORIGIN, ACTIVE]
       alias_datas = options[:aliases].map {|r| r + [ACTIVE] }
       @logger = options[:logger]
@@ -37,6 +36,7 @@ module Murakumo
       # データベースを作成してレコードを更新
       create_database
       update(@address, datas)
+      @hostname = host_data.first
 
       # ゴシップオブジェクトを生成
       @gossip = RGossip2.client({
