@@ -8,6 +8,12 @@ module Murakumo
   # ヘルスチェックのコンテキスト
   class HealthCheckerContext
 
+    def initialize(vars = {})
+      vars.each do |name, val|
+        instance_variable_set("@#{name}", val)
+      end
+    end
+
     # TCPチェッカー
     def tcp_check(port, host = '127.0.0.1')
       s = TCPSocket.new(host, port)
@@ -29,35 +35,38 @@ module Murakumo
     end
 
     # MySQLのドライバがあれば、MySQLチェッカーを定義
-    has_mysql = false
+    mysql_class = nil
 
     begin
       require 'mysql'
-      has_mysql = true
+      mysql_class = Mysql
     rescue LoadError
       begin
         require 'mysql2'
-        has_mysql = true
+        mysql_class = Mysql2
       rescue LoadError
       end
     end
 
-    if has_mysql
-      def mysql_check(user, passwd = nil, port_sock = 3306, host = '127.0.0.1', db = nil)
-        port = nil
-        sock = nil
+    if mysql_class
+      class_eval <<-EOS
+        def mysql_check(user, passwd = nil, port_sock = 3306, host = '127.0.0.1', db = nil)
+          port = nil
+          sock = nil
 
-        if port_sock.kind_of?(Integer)
-          port = port_sock
-        else
-          sock = port_sock
+          if port_sock.kind_of?(Integer)
+            port = port_sock
+          else
+            sock = port_sock
+          end
+
+          my = #{mysql_class}.new(host, user, passwd, db, port, sock)
+          !!(my.respond_to?(:ping) ? my.ping : my.stat)
+        rescue => e
+          @logger.debug(e.message)
+          false
         end
-
-        my = Mysql.new(host, user, passwd, db, port, sock)
-        !!(my.respond_to?(:ping) ? my.ping : my.stat)
-      rescue
-        false
-      end
+      EOS
     end
 
   end # HealthCheckerContext

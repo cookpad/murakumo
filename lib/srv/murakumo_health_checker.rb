@@ -12,6 +12,7 @@ module Murakumo
       @name = name
       @cloud = cloud
       @logger = logger
+      @options = options
 
       # 各種変数の設定
       {
@@ -97,7 +98,7 @@ module Murakumo
 
             begin
               retval = timeout(@timeout) {
-                HealthCheckerContext.new.instance_eval(@script)
+                HealthCheckerContext.new(:name => @name, :logger => @logger, :options => @options).instance_eval(@script)
               }
             rescue Timeout::Error
               retval = false
