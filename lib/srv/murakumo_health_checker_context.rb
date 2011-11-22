@@ -39,34 +39,53 @@ module Murakumo
 
     begin
       require 'mysql'
-      mysql_class = Mysql
-    rescue LoadError
-      begin
-        require 'mysql2'
-        mysql_class = Mysql2::Client
-      rescue LoadError
+
+      def mysql_check(user, passwd = nil, port_sock = 3306, host = '127.0.0.1', db = nil)
+        port = nil
+        sock = nil
+
+        if port_sock.kind_of?(Integer)
+          port = port_sock
+        else
+          sock = port_sock
+        end
+
+        my = Mysql.new(host, user, passwd, db, port, sock)
+        !!(my.respond_to?(:ping) ? my.ping : my.stat)
+      rescue => e
+        @logger.debug(e.message)
+        return false
+      ensure
+        my.close if my
       end
+    rescue LoadError
     end
 
-    if mysql_class
-      class_eval <<-EOS
-        def mysql_check(user, passwd = nil, port_sock = 3306, host = '127.0.0.1', db = nil)
-          port = nil
-          sock = nil
+    begin
+      require 'mysql2'
 
-          if port_sock.kind_of?(Integer)
-            port = port_sock
-          else
-            sock = port_sock
-          end
+      def mysql_check(user, passwd = nil, port_sock = 3306, host = '127.0.0.1', db = nil)
+        opts = {}
+        opts[:username] = user
+        opts[:password] = passwd if passwd
+        opts[:host]     = host if host
+        opts[:database] = db if db
 
-          my = #{mysql_class}.new(host, user, passwd, db, port, sock)
-          !!(my.respond_to?(:ping) ? my.ping : my.stat)
-        rescue => e
-          @logger.debug(e.message)
-          false
+        if port_sock.kind_of?(Integer)
+          opts[:port] = port_sock
+        else
+          opts[:socket] = port_sock
         end
-      EOS
+
+        my = Mysql2::Client.new(opts)
+        my.ping
+      rescue => e
+        @logger.debug(e.message)
+        return false
+      ensure
+        my.close if my
+      end
+    rescue LoadError
     end
 
   end # HealthCheckerContext
