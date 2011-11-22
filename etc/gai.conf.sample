@@ -1,0 +1,2 @@
+# An order of addrinfo follows the returned order. (for EC2)
+scopev4 ::ffff:10.152.43.33/104  2
