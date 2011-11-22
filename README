@@ -35,7 +35,7 @@ https://bitbucket.org/winebarrel/murakumo
   shell> mrkmctl -L
   IP address       TTL     Priority  Activity  Hostname
   ---------------  ------  --------  --------  ----------
-  10.11.12.13          60  Origin    Active    dev-01
+  10.11.12.13          60  Origin    Active    my-host
   10.11.12.13         300  Master    Active    foo.bar
 
 === deletion of a record 
