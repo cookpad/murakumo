@@ -97,7 +97,7 @@ EOF
   chmod 600 $conf
 
   echo "configuration file was created: $conf"
-  echo -e "\033[0;31mPlease set 127.0.0.1 to resolv.conf.\033[0;39m" 
+  /bin/echo -e "\033[0;31mPlease set 127.0.0.1 to resolv.conf.\033[0;39m" 
   ;;
 hup)
   PID=`ps -ef | awk '/ruby/ && /murakumo/ && !/awk/{print $2}'`
