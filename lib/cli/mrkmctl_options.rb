@@ -9,7 +9,7 @@ def mrkmctl_parse_args
     desc 'displays a list of a record'
     option :list, '-L', '--list [SEARCH_PHRASE]'
 
-    desc 'adds or updates a record: <hostname>[,<TTL>[,{master|secondary|backup}]]'
+    desc 'adds or updates a record: <hostname>[,<TTL>[,{master|backup}]]'
     option :add, '-A', '--add RECORD', :type => Array, :multiple => true do |value|
       (1 <= value.length and value.length <= 3) or invalid_argument
 
@@ -25,7 +25,7 @@ def mrkmctl_parse_args
       end
 
       # Priority
-      priority.nil? or /\A(master|secondary|backup)\Z/i =~ priority or invalid_argument
+      priority.nil? or /\A(master|backup)\Z/i =~ priority or invalid_argument
     end
 
     desc 'deletes a record'
@@ -85,8 +85,6 @@ def mrkmctl_parse_args
           priority = case r[2].to_s
                      when /master/i
                        Murakumo::MASTER
-                     when /secondary/i
-                       Murakumo::SECONDARY
                      else
                        Murakumo::BACKUP
                      end

@@ -1,9 +1,8 @@
 module Murakumo
-  VERSION = '0.2.1'
+  VERSION = '0.2.2'
 
   # Priority
   MASTER = 1
-  SECONDARY = 0
   BACKUP = -1
   ORIGIN = -65536
 
