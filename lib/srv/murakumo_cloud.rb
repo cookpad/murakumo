@@ -90,6 +90,10 @@ module Murakumo
           @logger.warn('configuration of a health check is not right')
         end
       end
+
+      # キャッシュ
+      @cache = {}
+      # XXX: オプションで制御する
     end
 
     # Control of service
@@ -364,11 +368,51 @@ module Murakumo
       # ドメインが指定されていたら削除
       name.sub!(/\.#{Regexp.escape(@options[:domain])}\Z/i, '') if @options[:domain]
 
-      # シングルスレッドェ…
-      @address_records = @db.execute(<<-EOS, name, ACTIVE)
-        SELECT ip_address, ttl, priority FROM records
-        WHERE name = ? AND activity = ?
-      EOS
+      if @cache.nil?
+        # キャッシュを設定していないときはいつもの処理
+        @address_records = @db.execute(<<-EOS, name, ACTIVE) # シングルスレッドェ…
+          SELECT ip_address, ttl, priority FROM records
+          WHERE name = ? AND activity = ?
+        EOS
+      else
+        # キャッシュを設定しているとき
+        # キャッシュを検索
+        @address_records, cache_time = @cache[name]
+        now = Time.now
+
+        # キャッシュが見つからなかった・期限が切れていた場合
+        if @address_records.nil? or now > cache_time
+          # 既存のキャッシュは削除
+          @cache.delete(name)
+
+          # 普通に検索
+          @address_records = @db.execute(<<-EOS, name, ACTIVE) # シングルスレッドェ…
+            SELECT ip_address, ttl, priority FROM records
+            WHERE name = ? AND activity = ?
+          EOS
+
+          # レコードがあればキャッシュに入れる（ネガティブキャッシュはしない）
+          unless @address_records.empty?
+            min_ttl = nil
+
+            # レコードはハッシュに変換する
+            cache_records = @address_records.map do |i|
+              ip_address, ttl, priority = i.values_at('ip_address', 'ttl', 'priority')
+
+              if min_ttl.nil? or ttl < min_ttl
+                min_ttl = ttl
+              end
+
+              {'ip_address' => ip_address, 'ttl' => ttl, 'priority' => priority}
+            end
+
+            # 最小値をExpire期限として設定
+            expire_time = now + min_ttl
+
+            @cache[name] = [cache_records, expire_time]
+          end
+        end # キャッシュが見つからなかった場合
+      end # @cache.nil?の判定
 
       @address_records.length.nonzero?
     end
