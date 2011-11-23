@@ -19,18 +19,21 @@ module Murakumo
       s = TCPSocket.new(host, port)
       s.close
       return true
-    rescue Exception
+    rescue => e
+      @logger.debug("#{@name}: #{e.message}")
       return false
     end
 
     # HTTPチェッカー
     def http_get(path, statuses = [200], host = '127.0.0.1', port = 80)
       res = Net::HTTP.start('127.0.0.1', 80) do |http|
+        http.read_timeout = @options['timeout']
         http.get(path)
       end
 
       statuses.include?(res.code.to_i)
-    rescue Exception
+    rescue => e
+      @logger.debug("#{@name}: #{e.message}")
       return false
     end
 
@@ -53,7 +56,7 @@ module Murakumo
         my = Mysql.new(host, user, passwd, db, port, sock)
         !!(my.respond_to?(:ping) ? my.ping : my.stat)
       rescue => e
-        @logger.debug(e.message)
+        @logger.debug("#{@name}: #{e.message}")
         return false
       ensure
         my.close if my
@@ -80,7 +83,7 @@ module Murakumo
         my = Mysql2::Client.new(opts)
         my.ping
       rescue => e
-        @logger.debug(e.message)
+        @logger.debug("#{@name}: #{e.message}")
         return false
       ensure
         my.close if my
