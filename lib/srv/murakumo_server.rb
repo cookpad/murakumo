@@ -69,10 +69,24 @@ module Murakumo
           match(@@cloud.method(:address_exist?), :A) do |transaction|
             records = @@cloud.lookup_addresses(transaction.name)
 
+            addrs = []
+            min_ttl = nil # 最小のTTLをセット
+
             records.each do |r|
               address, ttl = r
-              transaction.respond!(address, :ttl => ttl)
+
+              if min_ttl.nil? or ttl < min_ttl
+                min_ttl = ttl
+              end
+
+              addrs << Resolv::DNS::Resource::IN::A.new(address)
             end
+
+            # 直接引数に渡せないので…
+            addrs << {:ttl => min_ttl}
+
+            # スループットをあげるためrespond!は呼ばない
+            transaction.append!(*addrs)
           end # match
 
           # look up PTR record
