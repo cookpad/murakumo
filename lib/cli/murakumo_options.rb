@@ -88,6 +88,9 @@ def murakumo_parse_args
       invalid_argument if (value || '').strip.empty?
     end
 
+    desc 'enables the cache of a response'
+    option :enable_cache, '-e', '--enable-cache'
+
     desc 'command of daemonize: {start|stop|restart|status}'
     option :daemon, '-d', '--daemon CMD', :type => [:start, :stop, :restart, :status]
 

@@ -92,8 +92,7 @@ module Murakumo
       end
 
       # キャッシュ
-      @cache = {}
-      # XXX: オプションで制御する
+      @cache = {} if options[:enable_cache]
     end
 
     # Control of service
@@ -122,6 +121,7 @@ module Murakumo
         :socket        => 'socket',
         :max_ip_num    => 'max-ip-num',
         :domain        => 'domain',
+        :enable_cache  => lambda {|v| ['enable-cache', !!v] },
         :log_path      => 'log-path',
         :log_level     => 'log-level',
         :gossip_port   => 'gossip-port',

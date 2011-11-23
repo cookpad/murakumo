@@ -70,6 +70,7 @@ max-ip-num: 8
 
 #initial-nodes: 10.11.12.14, 10.11.12.15
 #domain: ap-northeast-1.compute.internal
+#enable-cache: true
 
 host: $ip_addr, $hostname, 60
 
