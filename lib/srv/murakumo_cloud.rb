@@ -36,6 +36,8 @@ module Murakumo
       # データベースを作成してレコードを更新
       create_database
       update(@address, datas)
+
+      # updateの後にホスト名をセットすること
       @hostname = host_data.first
 
       # ゴシップオブジェクトを生成
