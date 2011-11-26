@@ -28,7 +28,7 @@ max-ip-num: 8
 # Ip address, hostname, ttl
 host: 10.11.12.13, my-host, 60
 
-# alias hostname, ttl, master/backup
+# alias hostname, ttl, master/secondary/backup
 alias: 
   - foo,60,master
   - bar,60,master

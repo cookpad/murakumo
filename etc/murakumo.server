@@ -72,8 +72,23 @@ max-ip-num: 8
 #domain: ap-northeast-1.compute.internal
 #enable-cache: true
 
+#notification:
+#  host: my.smtp.server
+#  #port: 25
+#  sender: sender@mail.from
+#  recipients:
+#    - recipient1@mail.to
+#    - recipient2@mail.to
+#  #helo: my.domain
+#  #account: my_name
+#  #password: my_password
+#  #open_timeout: 30
+#  #read_timeout: 60
+
+# Ip address, hostname, ttl
 host: $ip_addr, $hostname, 60
 
+# alias hostname, ttl, master/secondary/backup
 #alias:
 #  - foo,60,master
 #  - bar,60,backup
