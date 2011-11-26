@@ -220,7 +220,7 @@ def murakumo_parse_args
 
         options[:notification] = ntfc_h = {:args => ntfc_args}
 
-        ntfc_h[:sender] = ntfc['sender'] || 'murakumo@localhost'
+        ntfc_h[:sender] = ntfc['sender'] || 'murakumo@localhost.localdomain'
 
         if ntfc['recipients'].kind_of?(Array)
           ntfc_h[:recipients] = ntfc['recipients']

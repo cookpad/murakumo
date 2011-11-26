@@ -1,4 +1,5 @@
 require 'net/http'
+require 'net/smtp'
 require 'socket'
 
 require 'misc/murakumo_const'
@@ -32,6 +33,14 @@ module Murakumo
       end
 
       statuses.include?(res.code.to_i)
+    rescue => e
+      @logger.debug("#{@name}: #{e.message}")
+      return false
+    end
+
+    # SMTPチェッカー
+    def smtp_check(*args)
+      Net::SMTP.start(*args) {|smtp| true }
     rescue => e
       @logger.debug("#{@name}: #{e.message}")
       return false
