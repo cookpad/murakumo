@@ -1,4 +1,5 @@
 require 'timeout'
+require 'open3'
 require 'resolv-replace'
 
 require 'srv/murakumo_health_check_context'
@@ -39,6 +40,10 @@ module Murakumo
       if options[:notification]
         @notifier = HealthCheckNotifier.new(@address, @name, @logger, options[:notification])
       end
+
+      # イベントハンドラの設定
+      @on_activate = options['on_activate']
+      @on_inactivate = options['on_inactivate']
     end
 
     def good
@@ -79,13 +84,13 @@ module Murakumo
       status = @normal_health ? 'healthy' : 'unhealthy'
       @logger.info("health condition changed: #{@name}: #{status}")
 
-      if @notifier
-        case activity
-        when ACTIVE
-          @notifier.notify_active
-        when INACTIVE
-          @notifier.notify_inactive
-        end
+      case activity
+      when ACTIVE
+        @notifier.notify_active if @notifier
+        handle_event(@on_activate, 'Active') if @on_activate
+      when INACTIVE
+        @notifier.notify_inactive if @notifier
+        handle_event(@on_inactivate, 'Inactive') if @on_inactivate
       end
     end
 
@@ -149,6 +154,22 @@ module Murakumo
     def alive?
       @alive
     end
+
+    private
+
+    def handle_event(handler, status)
+      Open3.popen3("#{@on_activate} '#{@address}' '#{@name}' '#{status}'") do |stdin, stdout, stderr|
+        out = stdout.read.strip
+        @logger.info(out) unless out.empty?
+
+        err = stderr.read.strip
+        @logger.error(err) unless err.empty?
+      end
+    rescue Exception => e
+      message = (["#{e.class}: #{e.message}"] + (e.backtrace || [])).join("\n\tfrom ")
+      @logger.error("#{@name}: #{message}")
+    end
+
   end # HealthChecker
 
 end # Murakumo

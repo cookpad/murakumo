@@ -99,6 +99,8 @@ host: $ip_addr, $hostname, 60
 #    timeout: 5
 #    healthy: 2
 #    unhealthy: 2
+#    on_activate: /foo/bar/zoo.sh   # args: address name status
+#    on_inactivate: /foo/bar/zoo.sh # args: address name status
 #    script: |
 #      tcp_check 80
 #  bar:

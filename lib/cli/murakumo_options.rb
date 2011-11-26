@@ -190,8 +190,19 @@ def murakumo_parse_args
       if options.config_file and (health_check = options.config_file['health-check'])
         health_check.kind_of?(Hash) or parse_error('configuration of a health check is not right')
 
-        if health_check.any? {|k, v| (v['script'] || '').empty? }
-          parse_error('configuration of a health check is not right')
+        health_check.each do |name, conf|
+          if (conf['script'] || '').empty?
+            parse_error('configuration of a health check is not right', "#{name}/script")
+          end
+
+          %w(on_activate on_inactivate).each do |key|
+            next unless conf[key]
+            path = conf[key] = conf[key].strip
+
+            if FileTest.directory?(path) or not FileTest.executable?(path)
+              parse_error('configuration of a health check is not right', "#{name}/#{key}")
+            end
+          end
         end
       end
 
@@ -200,16 +211,16 @@ def murakumo_parse_args
         ntfc.kind_of?(Hash) or parse_error('configuration of a notification is not right')
 
         if (ntfc['host'] || '').empty?
-          parse_error('configuration of a notification is not right')
+          parse_error('configuration of a notification is not right', 'host')
         end
 
         unless ntfc['recipients']
-          parse_error('configuration of a notification is not right')
+          parse_error('configuration of a notification is not right', 'recipients')
         end
 
         %w(port open_timeout read_timeout).each do |key|
           if ntfc[key] and /\A\d+\Z/ !~ ntfc[key].to_s
-            parse_error('configuration of a notification is not right')
+            parse_error('configuration of a notification is not right', key)
           end
         end
 
