@@ -1,5 +1,6 @@
 require 'net/http'
 require 'net/smtp'
+require 'net/telnet'
 require 'socket'
 
 require 'misc/murakumo_const'
@@ -26,7 +27,7 @@ module Murakumo
     end
 
     # HTTPチェッカー
-    def http_get(path, statuses = [200], host = '127.0.0.1', port = 80)
+    def http_get(path, statuses = [200], port = 80, host = '127.0.0.1')
       res = Net::HTTP.start('127.0.0.1', 80) do |http|
         http.read_timeout = @options['timeout']
         http.get(path)
@@ -44,6 +45,19 @@ module Murakumo
     rescue => e
       @logger.debug("#{@name}: #{e.message}")
       return false
+    end
+
+    # memcachedチェッカー
+    def memcached_check(port = 11211, host = '127.0.0.1')
+      telnet = Net::Telnet.new('Host' => host, 'Port' => port)
+      !!telnet.cmd('String' => 'stats', 'Match' => /END/i, 'Timeout' => @options['timeout'])
+    rescue =>e 
+      @logger.debug("#{@name}: #{e.message}")
+      return false
+    ensure
+      if telnet
+        telnet.close rescue nil
+      end
     end
 
     begin
@@ -65,7 +79,9 @@ module Murakumo
         @logger.debug("#{@name}: #{e.message}")
         return false
       ensure
-        my.close if my
+        if my
+          my.close rescue nil
+        end
       end
     rescue LoadError
     end
@@ -93,7 +109,9 @@ module Murakumo
           @logger.debug("#{@name}: #{e.message}")
           return false
         ensure
-          my.close if my
+          if my
+            my.close rescue nil
+          end
         end
       rescue LoadError
       end
