@@ -195,7 +195,7 @@ def murakumo_parse_args
             parse_error('configuration of a health check is not right', "#{name}/script")
           end
 
-          %w(on_activate on_inactivate).each do |key|
+          %w(on-activate on-inactivate).each do |key|
             next unless conf[key]
             path = conf[key] = conf[key].strip
 

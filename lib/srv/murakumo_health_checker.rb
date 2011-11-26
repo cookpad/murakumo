@@ -42,8 +42,8 @@ module Murakumo
       end
 
       # イベントハンドラの設定
-      @on_activate = options['on_activate']
-      @on_inactivate = options['on_inactivate']
+      @on_activate = options['on-activate']
+      @on_inactivate = options['on-inactivate']
     end
 
     def good
