@@ -1,14 +1,16 @@
 require 'timeout'
 require 'resolv-replace'
 
-require 'srv/murakumo_health_checker_context'
+require 'srv/murakumo_health_check_context'
+require 'srv/murakumo_health_check_notifier'
 require 'misc/murakumo_const'
 
 module Murakumo
 
   class HealthChecker
 
-    def initialize(name, cloud, logger, options)
+    def initialize(address, name, cloud, logger, options)
+      @address = address
       @name = name
       @cloud = cloud
       @logger = logger
@@ -32,6 +34,11 @@ module Murakumo
       @script = options['script']
       raise "health check script of #{@name} is not found" unless @script
       @script = File.read(script) if File.exists?(@script)
+
+      # 通知オブジェクトの設定
+      if options[:notification]
+        @notifier = HealthCheckNotifier.new(@address, @name, @logger, options[:notification])
+      end
     end
 
     def good
@@ -71,6 +78,15 @@ module Murakumo
 
       status = @normal_health ? 'healthy' : 'unhealthy'
       @logger.info("health condition changed: #{@name}: #{status}")
+
+      if @notifier
+        case activity
+        when ACTIVE
+          @notifier.notify_active
+        when INACTIVE
+          @notifier.notify_inactive
+        end
+      end
     end
 
     def start
@@ -98,7 +114,7 @@ module Murakumo
 
             begin
               retval = timeout(@timeout) {
-                HealthCheckerContext.new(:name => @name, :logger => @logger, :options => @options).instance_eval(@script)
+                HealthCheckContext.new(:name => @name, :logger => @logger, :options => @options).instance_eval(@script)
               }
             rescue Timeout::Error
               retval = false

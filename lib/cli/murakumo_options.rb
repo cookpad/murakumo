@@ -183,14 +183,53 @@ def murakumo_parse_args
       hostnames = [options[:host][0].downcase] + options[:aliases].map {|i| i[0].downcase }
 
       if hostnames.length != hostnames.uniq.length
-        raise OptionParser::ParseError, 'same hostname was found'
+        parse_error('same hostname was found')
       end
 
       # health check
       if options.config_file and (health_check = options.config_file['health-check'])
-        unless health_check.kind_of?(Hash) and health_check.all? {|k, v| v.has_key?('script') }
-          raise OptionParser::ParseError, 'configuration of a health check is not right'
+        health_check.kind_of?(Hash) or parse_error('configuration of a health check is not right')
+
+        if health_check.any? {|k, v| (v['script'] || '').empty? }
+          parse_error('configuration of a health check is not right')
         end
+      end
+
+      # notification
+      if options.config_file and (ntfc = options.config_file['notification'])
+        ntfc.kind_of?(Hash) or parse_error('configuration of a notification is not right')
+
+        if (ntfc['host'] || '').empty?
+          parse_error('configuration of a notification is not right')
+        end
+
+        unless ntfc['recipients']
+          parse_error('configuration of a notification is not right')
+        end
+
+        %w(port open_timeout read_timeout).each do |key|
+          if ntfc[key] and /\A\d+\Z/ !~ ntfc[key].to_s
+            parse_error('configuration of a notification is not right')
+          end
+        end
+
+        ntfc_args = [ntfc['host']]
+        ntfc_args << ntfc['port'].to_i if ntfc['port']
+        ntfc_args << ntfc['account'] if ntfc['account']
+        ntfc_args << ntfc['password'] if ntfc['password']
+
+        options[:notification] = ntfc_h = {:args => ntfc_args}
+
+        ntfc_h[:sender] = ntfc['sender'] || 'murakumo@localhost'
+
+        if ntfc['recipients'].kind_of?(Array)
+          ntfc_h[:recipients] = ntfc['recipients']
+        else
+          ntfc_h[:recipients] = ntfc['recipients'].to_s.split(/\s*,\s*/).select {|i| not i.empty? }
+        end
+
+        ntfc_h[:open_timeout] = ntfc['open_timeout'].to_i if ntfc['open_timeout']
+        ntfc_h[:read_timeout] = ntfc['read_timeout'].to_i if ntfc['read_timeout']
       end
     end
 

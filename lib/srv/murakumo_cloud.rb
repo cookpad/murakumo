@@ -77,8 +77,12 @@ module Murakumo
           health_check.each do |name, conf|
             name = name.downcase
 
+            if options[:notification]
+              conf = conf.merge(:notification => options[:notification])
+            end
+
             if datas.any? {|i| i[0] == name }
-              checker = HealthChecker.new(name, self, @logger, conf)
+              checker = HealthChecker.new(@address, name, self, @logger, conf)
               @health_checkers[name] = checker
               # ヘルスチェックはまだ起動しない
             else
@@ -165,6 +169,10 @@ module Murakumo
 
       if @options.config_file and @options.config_file['health-check']
         hash['health-check'] = @options.config_file['health-check']
+      end
+
+      if @options.config_file and @options.config_file['notification']
+        hash['notification'] = @options.config_file['notification']
       end
 
       return hash
