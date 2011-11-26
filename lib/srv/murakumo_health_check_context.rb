@@ -46,9 +46,6 @@ module Murakumo
       return false
     end
 
-    # MySQLのドライバがあれば、MySQLチェッカーを定義
-    mysql_class = nil
-
     begin
       require 'mysql'
 
@@ -73,32 +70,34 @@ module Murakumo
     rescue LoadError
     end
 
-    begin
-      require 'mysql2'
+    unless defined?(:mysql_check)
+      begin
+        require 'mysql2'
 
-      def mysql_check(user, passwd = nil, port_sock = 3306, host = '127.0.0.1', db = nil)
-        opts = {}
-        opts[:username] = user
-        opts[:password] = passwd if passwd
-        opts[:host]     = host if host
-        opts[:database] = db if db
+        def mysql_check(user, passwd = nil, port_sock = 3306, host = '127.0.0.1', db = nil)
+          opts = {}
+          opts[:username] = user
+          opts[:password] = passwd if passwd
+          opts[:host]     = host if host
+          opts[:database] = db if db
 
-        if port_sock.kind_of?(Integer)
-          opts[:port] = port_sock
-        else
-          opts[:socket] = port_sock
+          if port_sock.kind_of?(Integer)
+            opts[:port] = port_sock
+          else
+            opts[:socket] = port_sock
+          end
+
+          my = Mysql2::Client.new(opts)
+          my.ping
+        rescue => e
+          @logger.debug("#{@name}: #{e.message}")
+          return false
+        ensure
+          my.close if my
         end
-
-        my = Mysql2::Client.new(opts)
-        my.ping
-      rescue => e
-        @logger.debug("#{@name}: #{e.message}")
-        return false
-      ensure
-        my.close if my
+      rescue LoadError
       end
-    rescue LoadError
-    end
+    end # unless defined?(:mysql_check)
 
   end # HealthCheckContext
 
