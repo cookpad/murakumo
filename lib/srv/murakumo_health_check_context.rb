@@ -6,7 +6,7 @@ require 'misc/murakumo_const'
 module Murakumo
 
   # ヘルスチェックのコンテキスト
-  class HealthCheckerContext
+  class HealthCheckContext
 
     def initialize(vars = {})
       vars.each do |name, val|
@@ -91,6 +91,6 @@ module Murakumo
     rescue LoadError
     end
 
-  end # HealthCheckerContext
+  end # HealthCheckContext
 
 end # Murakumo

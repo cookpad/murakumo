@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name              = 'murakumo'
-  spec.version           = '0.3.1'
+  spec.version           = '0.3.2'
   spec.summary           = 'Murakumo is the internal DNS server which manages name information using a gossip protocol.'
   spec.require_paths     = %w(lib)
   spec.files             = %w(README) + Dir.glob('bin/**/*') + Dir.glob('lib/**/*') + Dir.glob('etc/**/*')
