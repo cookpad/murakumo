@@ -47,7 +47,7 @@ begin
       puts 'No macth'
     else
       puts <<-EOF
-IP address       TTL     Priority  Activity  Hostname
+IP address       TTL     Priority   Activity  Hostname
 ---------------  ------  ---------  --------  ----------
       EOF
       records.each do |r|
