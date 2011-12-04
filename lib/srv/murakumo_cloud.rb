@@ -22,15 +22,15 @@ module Murakumo
       # リソースレコードからホストのアドレスとデータを取り出す
       host_data = options[:host]
       @address = host_data.shift
-      host_data.concat [ORIGIN, ACTIVE]
+      host_data.concat [ORIGIN, 0, ACTIVE]
       alias_datas = options[:aliases].map {|r| r + [ACTIVE] }
       @logger = options[:logger]
 
       # 名前は小文字に変換
       datas = ([host_data] + alias_datas).map do |i|
-        name, ttl, priority, activity = i
+        name, ttl, priority, weight, activity = i
         name = name.downcase
-        [name, ttl, priority, activity]
+        [name, ttl, priority, weight, activity]
       end
 
       # データベースを作成してレコードを更新
@@ -157,12 +157,12 @@ module Murakumo
         end
       end
 
-      records = list_records
+      records = list_records.select {|r| r[0] == @address }
 
       hash['host'] = records.find {|r| r[3] == ORIGIN }[0..2].join(',')
 
       aliases = records.select {|r| r[3] != ORIGIN }.map do |r|
-        [r[1], r[2], (r[3] == MASTER ? 'master' : 'backup')].join(',')
+        [r[1], r[2], (r[3] == MASTER ? 'master' : 'backup'), r[4]].join(',')
       end
 
       hash['alias'] = aliases unless aliases.empty?
@@ -188,7 +188,7 @@ module Murakumo
     end
 
     def list_records
-      columns = %w(ip_address name ttl priority activity)
+      columns = %w(ip_address name ttl priority weight activity)
 
       @db.execute(<<-EOS).map {|i| i.values_at(*columns) }
         SELECT #{columns.join(', ')} FROM records ORDER BY ip_address, name
@@ -200,9 +200,9 @@ module Murakumo
 
       # 名前は小文字に変換
       records = records.map do |i|
-        name, ttl, priority = i
+        name, ttl, priority, weight = i
         name = name.downcase
-        [name, ttl, priority]
+        [name, ttl, priority, weight]
       end
 
       @gossip.transaction do
@@ -222,6 +222,7 @@ module Murakumo
         # データを更新
         records = records.map {|r| r + [ACTIVE] }
         @gossip.data.concat(records)
+
       end # transaction
 
       # データベースを更新
@@ -336,7 +337,7 @@ module Murakumo
       return unless datas
 
       datas.each do |i|
-        name, ttl, priority, activity = i
+        name, ttl, priority, weight, activity = i
 
         # 名前は小文字に変換
         name = name.downcase
@@ -346,9 +347,9 @@ module Murakumo
           @logger.warn('same hostname as origin was found')
         end
 
-        @db.execute(<<-EOS, address, name, ttl, priority, activity)
-          REPLACE INTO records (ip_address, name, ttl, priority, activity)
-          VALUES (?, ?, ?, ?, ?)
+        @db.execute(<<-EOS, address, name, ttl, priority, weight, activity)
+          REPLACE INTO records (ip_address, name, ttl, priority, weight, activity)
+          VALUES (?, ?, ?, ?, ?, ?)
         EOS
       end
 
@@ -397,7 +398,7 @@ module Murakumo
       if @cache.nil?
         # キャッシュを設定していないときはいつもの処理
         @address_records = @db.execute(<<-EOS, name, ACTIVE) # シングルスレッドェ…
-          SELECT ip_address, ttl, priority FROM records
+          SELECT ip_address, ttl, priority, weight FROM records
           WHERE name = ? AND activity = ?
         EOS
       else
@@ -413,7 +414,7 @@ module Murakumo
 
           # 普通に検索
           @address_records = @db.execute(<<-EOS, name, ACTIVE) # シングルスレッドェ…
-            SELECT ip_address, ttl, priority FROM records
+            SELECT ip_address, ttl, priority, weight FROM records
             WHERE name = ? AND activity = ?
           EOS
 
@@ -423,13 +424,13 @@ module Murakumo
 
             # レコードはハッシュに変換する
             cache_records = @address_records.map do |i|
-              ip_address, ttl, priority = i.values_at('ip_address', 'ttl', 'priority')
+              ip_address, ttl, priority, weight = i.values_at('ip_address', 'ttl', 'priority', 'weight')
 
               if min_ttl.nil? or ttl < min_ttl
                 min_ttl = ttl
               end
 
-              {'ip_address' => ip_address, 'ttl' => ttl, 'priority' => priority}
+              {'ip_address' => ip_address, 'ttl' => ttl, 'priority' => priority, 'weight' => weight}
             end
 
             # 最小値をExpire期限として設定
@@ -550,6 +551,7 @@ module Murakumo
           name       TEXT NOT NULL,
           ttl        INTEGER NOT NULL,
           priority   INTEGER NOT NULL, /* MASTER:1, BACKUP:0, ORIGIN:-1 */
+          weight     INTEGER NOT NULL, /* Origin:0, Other:>=1 */
           activity   INTEGER NOT NULL, /* Active:1, Inactive:0 */
           PRIMARY KEY (ip_address, name)
         )

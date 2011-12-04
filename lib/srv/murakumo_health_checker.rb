@@ -69,7 +69,7 @@ module Murakumo
       @cloud.gossip.transaction do
         @cloud.gossip.data.each do |i|
           # 名前の一致するデータを更新
-          i[3] = activity if i[0] == @name
+          i[4] = activity if i[0] == @name
         end
       end
 
