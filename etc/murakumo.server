@@ -90,7 +90,7 @@ max-ip-num: 8
 #  #open_timeout: 30
 #  #read_timeout: 60
 
-# Ip address, hostname, ttl
+# ip address, hostname, ttl
 host: $ip_addr, $hostname, 60
 
 # alias hostname, ttl, master/secondary/backup
