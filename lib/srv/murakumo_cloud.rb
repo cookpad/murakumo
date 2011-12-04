@@ -525,15 +525,32 @@ module Murakumo
 
     # 乱数でレコードをシャッフルする
     def shuffle_records(records)
-      # レコードが一件の時はそのまま返す
-      return records if records.length == 1
+      # レコードが1件以下の時はそのまま返す
+      return records if records.length <= 1
 
-      # 先頭のAレコードを決定
       max_ip_num = [records.length, @options[:max_ip_num]].min
-      first_index = rand(records.length)
 
-      # Aレコードを返す
-      (records + records).slice(first_index, max_ip_num)
+      indices = []
+      buf = []
+
+      # インデックスをWeight分追加
+      records.each_with_index do |r, i|
+        weight = r['weight']
+        weight.times { buf << i }
+      end
+
+      # インデックスをシャッフル
+      buf = buf.sort_by{ rand }
+
+      # ランダムにインデックスを取り出す
+      loop do
+        indices << buf.shift
+        indices.uniq!
+        break if (indices.size >= max_ip_num or buf.empty?)
+      end
+
+      # インデックスのレコードを返す
+      records.values_at(*indices)
     end
 
     # リソースレコードのデータベース作成
