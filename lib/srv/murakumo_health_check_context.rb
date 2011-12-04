@@ -28,7 +28,7 @@ module Murakumo
 
     # HTTPチェッカー
     def http_get(path, statuses = [200], port = 80, host = '127.0.0.1')
-      res = Net::HTTP.start('127.0.0.1', 80) do |http|
+      res = Net::HTTP.start(host, port) do |http|
         http.read_timeout = @options['timeout']
         http.get(path)
       end
