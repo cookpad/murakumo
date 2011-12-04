@@ -9,12 +9,12 @@ def mrkmctl_parse_args
     desc 'displays a list of a record'
     option :list, '-L', '--list [SEARCH_PHRASE]'
 
-    desc 'adds or updates a record: <hostname>[,<TTL>[,{master|secondary|backup}]]'
+    desc 'adds or updates a record: <hostname>[,<TTL>[,{master|secondary|backup}[,<weight>]]]'
     option :add, '-A', '--add RECORD', :type => Array, :multiple => true do |value|
-      (1 <= value.length and value.length <= 3) or invalid_argument
+      (1 <= value.length and value.length <= 4) or invalid_argument
 
       value = value.map {|i| i.strip }
-      hostname, ttl, priority = value
+      hostname, ttl, priority, weight = value
 
       # hostname
       /\A[0-9a-z\.\-]+\Z/i =~ hostname or invalid_argument
@@ -26,6 +26,11 @@ def mrkmctl_parse_args
 
       # Priority
       priority.nil? or /\A(master|secondary|backup)\Z/i =~ priority or invalid_argument
+
+      # Weight
+      unless weight.nil? or (/\A\d+\Z/ =~ weight and weight.to_i > 0)
+        invalid_argument
+      end
     end
 
     desc 'deletes a record'
@@ -80,7 +85,7 @@ def mrkmctl_parse_args
       if options[:add]
         options[:add] = options[:add].map do |r|
           r = r.map {|i| i ? i.to_s.strip : i }
-          [nil, 60, 'master'].each_with_index {|v, i| r[i] ||= v }
+          [nil, 60, 'master', 100].each_with_index {|v, i| r[i] ||= v }
 
           priority = case r[2].to_s
                      when /master/i
@@ -92,9 +97,10 @@ def mrkmctl_parse_args
                      end
 
           [
-            r[0], # name
+            r[0],      # name
             r[1].to_i, # TTL
             priority,
+            r[3].to_i  # weight
           ]
         end
       end

@@ -35,23 +35,23 @@ begin
                  end
 
       r[3] = priority
-      r[4] = (r[4] == Murakumo::ACTIVE ? 'Active' : 'Inactive')
+      r[5] = (r[5] == Murakumo::ACTIVE ? 'Active' : 'Inactive')
     end
 
     if arg.kind_of?(String)
-      # 引数がある場合はフィルタリング（TTLを除く）
-      records = records.select {|r| r.values_at(0, 1, 3, 4).any?{|i| i.to_s =~ /\A#{arg.to_s}/i } }
+      # 引数がある場合はフィルタリング（TTL、weightを除く）
+      records = records.select {|r| r.values_at(0, 1, 3, 5).any?{|i| i.to_s =~ /\A#{arg.to_s}/i } }
     end
 
     if records.empty?
       puts 'No macth'
     else
       puts <<-EOF
-IP address       TTL     Priority   Activity  Hostname
----------------  ------  ---------  --------  ----------
+IP address       TTL     Priority   Weight  Activity  Hostname
+---------------  ------  ---------  ------  --------  ----------
       EOF
       records.each do |r|
-        puts '%-15s  %6d  %-9s  %-8s  %s' % r.values_at(0, 2, 3, 4, 1)
+        puts '%-15s  %6d  %-9s  %6d  %-8s  %s' % r.values_at(0, 2, 3, 4, 5, 1)
       end
     end
 
