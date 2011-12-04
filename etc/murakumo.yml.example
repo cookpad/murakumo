@@ -33,10 +33,10 @@ max-ip-num: 8
 # ip address, hostname, ttl
 host: 10.11.12.13, my-host, 60
 
-# alias hostname, ttl, master/secondary/backup
+# alias hostname, ttl, master/secondary/backup, weight
 alias: 
-  - foo,60,master
-  - bar,60,master
+  - foo,60,master,100
+  - bar,60,master,100
 
 health-check:
   foo:

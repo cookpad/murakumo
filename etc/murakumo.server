@@ -93,10 +93,10 @@ max-ip-num: 8
 # ip address, hostname, ttl
 host: $ip_addr, $hostname, 60
 
-# alias hostname, ttl, master/secondary/backup
+# alias hostname, ttl, master/secondary/backup, weight
 #alias:
-#  - foo,60,master
-#  - bar,60,backup
+#  - foo,60,master,100
+#  - bar,60,backup,100
 
 #health-check:
 #  foo:
