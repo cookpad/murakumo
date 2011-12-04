@@ -248,8 +248,8 @@ def murakumo_parse_args
         %w(name-includes name-excludes addr-includes addr-excludes).each do |key|
           optkey = key.gsub('-', '_').to_sym
 
-          if (reg_vals = options.config_file[key])
-            reg_vals = reg_vals.strip.split(/\s*,\s*/).select {|i| not i.empty? }.map {|i| Regexp.new(i.strip) }
+          unless (reg_vals = (options.config_file[key] || '').strip).empty?
+            reg_vals = reg_vals.split(/\s*,\s*/).select {|i| not i.empty? }.map {|i| Regexp.new(i.strip) }
           else
             reg_vals = []
           end

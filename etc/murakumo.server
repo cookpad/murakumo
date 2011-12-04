@@ -72,6 +72,11 @@ max-ip-num: 8
 #domain: ap-northeast-1.compute.internal
 #enable-cache: true
 
+#name-includes: ^app-\d+$, ^db-\d+$
+#name-excludes:
+#addr-includes: ^10\..*
+#addr-excludes:
+
 #notification:
 #  host: my.smtp.server
 #  #port: 25
