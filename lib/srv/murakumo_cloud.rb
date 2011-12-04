@@ -167,13 +167,22 @@ module Murakumo
 
       hash['alias'] = aliases unless aliases.empty?
 
-      if @options.config_file and @options.config_file['health-check']
-        hash['health-check'] = @options.config_file['health-check']
-      end
+      # 設定ファイルのみの項目
+      if @options.config_file
+        if @options.config_file['health-check']
+          hash['health-check'] = @options.config_file['health-check']
+        end
 
-      if @options.config_file and @options.config_file['notification']
-        hash['notification'] = @options.config_file['notification']
-      end
+        if @options.config_file['notification']
+          hash['notification'] = @options.config_file['notification']
+        end
+
+        %w(name-includes name-excludes addr-includes addr-excludes).each do |key|
+          if @options.config_file[key]
+            hash[key] = @options.config_file[key]
+          end
+        end
+      end # 設定ファイルのみの項目
 
       return hash
     end
