@@ -73,7 +73,9 @@ module Murakumo
           sock = port_sock
         end
 
-        my = Mysql.new(host, user, passwd, db, port, sock)
+        my = Mysql.init
+        my.options(Mysql::OPT_CONNECT_TIMEOUT, @options['timeout'])
+        my.connect(host, user, passwd, db, port, sock)
         !!(my.respond_to?(:ping) ? my.ping : my.stat)
       rescue => e
         @logger.debug("#{@name}: #{e.message}")
