@@ -19,39 +19,39 @@ https://bitbucket.org/winebarrel/murakumo
   shell> murakumo-install-init-script
   shell> /etc/init.d/murakumo configure
   shell> /etc/init.d/murakumo start
-  shell> dig @127.0.0.1 <any_hostname>
+  shell> dig @127.0.0.1 <hostname>
 
 == Example
 === display of a list of a record
 
   shell> mrkmctl -L
-  IP address       TTL     Priority  Activity  Hostname
-  ---------------  ------  --------  --------  ----------
-  10.11.12.13          60  Origin    Active    my-host
+  IP address       TTL     Priority  Weight  Activity  Hostname
+  ---------------  ------  --------  ------  --------  ----------
+  10.11.12.13          60  Origin         0  Active    my-host
 
 === addition of a record 
 
-  shell> mrkmctl -A foo.bar,300,master
+  shell> mrkmctl -A foo.bar,300,master,100
   shell> mrkmctl -L
-  IP address       TTL     Priority  Activity  Hostname
-  ---------------  ------  --------  --------  ----------
-  10.11.12.13          60  Origin    Active    my-host
-  10.11.12.13         300  Master    Active    foo.bar
+  IP address       TTL     Priority  Weight  Activity  Hostname
+  ---------------  ------  --------  ------  --------  ----------
+  10.11.12.13          60  Origin         0  Active    my-host
+  10.11.12.13         300  Master       100  Active    foo.bar
 
 === deletion of a record 
 
   shell> mrkmctl -D foo.bar
   shell> mrkmctl -L
-  IP address       TTL     Priority  Activity  Hostname
-  ---------------  ------  --------  --------  ----------
-  10.11.12.13          60  Origin    Active    my-host
+  IP address       TTL     Priority  Weight  Activity  Hostname
+  ---------------  ------  --------  ------  --------  ----------
+  10.11.12.13          60  Origin         0  Active    my-host
 
 === addition of a node
 
   shell> mrkmctl -a 10.11.12.14
   shell> mrkmctl -L
-  IP address       TTL     Priority  Activity  Hostname
-  ---------------  ------  --------  --------  ----------
-  10.11.12.13          60  Origin    Active    my-host
-  10.11.12.14          60  Origin    Active    other-host
+  IP address       TTL     Priority  Weight  Activity  Hostname
+  ---------------  ------  --------  ------  --------  ----------
+  10.11.12.13          60  Origin         0  Active    my-host
+  10.11.12.14          60  Origin         0  Active    other-host
 
