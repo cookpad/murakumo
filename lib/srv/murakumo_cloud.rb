@@ -379,6 +379,15 @@ module Murakumo
     # Search of records
 
     def address_exist?(name)
+      # includes、excludesのチェック
+      if @options[:name_excludes] and @options[:name_excludes].any? {|r| r =~ name }
+        return false
+      end
+
+      if @options[:name_includes] and not @options[:name_includes].any? {|r| r =~ name }
+        return false
+      end
+
       # 名前は小文字に変換
       name = name.downcase
 
@@ -466,6 +475,15 @@ module Murakumo
 
     def name_exist?(address)
       address = x_ip_addr(address)
+
+      # includes、excludesのチェック
+      if @options[:addr_excludes] and @options[:addr_excludes].any? {|r| r =~ address }
+        return false
+      end
+
+      if @options[:addr_includes] and not @options[:addr_includes].any? {|r| r =~ address }
+        return false
+      end
 
       # シングルスレッドェ…
       @name_records = @db.execute(<<-EOS, address, ACTIVE)

@@ -13,9 +13,9 @@ max-ip-num: 8
 #enable-cache: true
 
 #name-includes: ^app-\d+$, ^db-\d+$
-#name-excludes:
+#name-excludes: 
 #addr-includes: ^10\..*
-#addr-excludes:
+#addr-excludes: 
 
 #notification:
 #  host: my.smtp.server

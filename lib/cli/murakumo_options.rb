@@ -246,15 +246,10 @@ def murakumo_parse_args
       # {name,addr}-{includes,excludes}
       if options.config_file
         %w(name-includes name-excludes addr-includes addr-excludes).each do |key|
-          optkey = key.gsub('-', '_').to_sym
-
           unless (reg_vals = (options.config_file[key] || '').strip).empty?
             reg_vals = reg_vals.split(/\s*,\s*/).select {|i| not i.empty? }.map {|i| Regexp.new(i.strip, Regexp::IGNORECASE) }
-          else
-            reg_vals = []
+            options[key.gsub('-', '_').to_sym] = reg_vals
           end
-
-          options[optkey] = reg_vals
         end
       end # {name,addr}-{includes,excludes}
 

@@ -92,6 +92,7 @@ module Murakumo
           # look up PTR record
           match(@@cloud.method(:name_exist?), :PTR) do |transaction|
             name, ttl = @@cloud.lookup_name(transaction.name)
+            name += ".#{@@options[:domain]}" if @@options[:domain]
             transaction.respond!(Resolv::DNS::Name.create("#{name}."), :ttl => ttl)
           end
 
