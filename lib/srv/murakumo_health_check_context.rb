@@ -88,7 +88,7 @@ module Murakumo
     rescue LoadError
     end
 
-    unless defined?(:mysql_check)
+    unless method_defined?(:mysql_check)
       begin
         require 'mysql2'
 
@@ -98,6 +98,7 @@ module Murakumo
           opts[:password] = passwd if passwd
           opts[:host]     = host if host
           opts[:database] = db if db
+          opts[:connect_timeout] = @options['timeout']
 
           if port_sock.kind_of?(Integer)
             opts[:port] = port_sock
