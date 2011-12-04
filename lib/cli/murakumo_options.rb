@@ -204,7 +204,7 @@ def murakumo_parse_args
             end
           end
         end
-      end
+      end # health check
 
       # notification
       if options.config_file and (ntfc = options.config_file['notification'])
@@ -241,8 +241,24 @@ def murakumo_parse_args
 
         ntfc_h[:open_timeout] = ntfc['open_timeout'].to_i if ntfc['open_timeout']
         ntfc_h[:read_timeout] = ntfc['read_timeout'].to_i if ntfc['read_timeout']
-      end
-    end
+      end # notification
+
+      # {name,addr}-{includes,excludes}
+      if options.config_file
+        %w(name-includes name-excludes addr-includes addr-excludes).each do |key|
+          optkey = key.gsub('-', '_').to_sym
+
+          if (reg_vals = options.config_file[key])
+            reg_vals = reg_vals.strip.split(/\s*,\s*/).select {|i| not i.empty? }.map {|i| Regexp.new(i.strip) }
+          else
+            reg_vals = []
+          end
+
+          options[optkey] = reg_vals
+        end
+      end # {name,addr}-{includes,excludes}
+
+    end # after
 
     error do |e|
       abort(e.message)
