@@ -35,6 +35,7 @@ begin
                  end
 
       r[3] = priority
+      r[4] = '-' if r[4].zero?
       r[5] = (r[5] == Murakumo::ACTIVE ? 'Active' : 'Inactive')
     end
 
@@ -51,7 +52,7 @@ IP address       TTL     Priority   Weight  Activity  Hostname
 ---------------  ------  ---------  ------  --------  ----------
       EOF
       records.each do |r|
-        puts '%-15s  %6d  %-9s  %6d  %-8s  %s' % r.values_at(0, 2, 3, 4, 5, 1)
+        puts '%-15s  %6d  %-9s  %6s  %-8s  %s' % r.values_at(0, 2, 3, 4, 5, 1)
       end
     end
 
