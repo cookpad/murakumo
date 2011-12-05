@@ -27,7 +27,7 @@ https://bitbucket.org/winebarrel/murakumo
   shell> mrkmctl -L
   IP address       TTL     Priority  Weight  Activity  Hostname
   ---------------  ------  --------  ------  --------  ----------
-  10.11.12.13          60  Origin         0  Active    my-host
+  10.11.12.13          60  Origin         -  Active    my-host
 
 === addition of a record 
 
@@ -35,7 +35,7 @@ https://bitbucket.org/winebarrel/murakumo
   shell> mrkmctl -L
   IP address       TTL     Priority  Weight  Activity  Hostname
   ---------------  ------  --------  ------  --------  ----------
-  10.11.12.13          60  Origin         0  Active    my-host
+  10.11.12.13          60  Origin         -  Active    my-host
   10.11.12.13         300  Master       100  Active    foo.bar
 
 === deletion of a record 
@@ -44,7 +44,7 @@ https://bitbucket.org/winebarrel/murakumo
   shell> mrkmctl -L
   IP address       TTL     Priority  Weight  Activity  Hostname
   ---------------  ------  --------  ------  --------  ----------
-  10.11.12.13          60  Origin         0  Active    my-host
+  10.11.12.13          60  Origin         -  Active    my-host
 
 === addition of a node
 
@@ -52,6 +52,6 @@ https://bitbucket.org/winebarrel/murakumo
   shell> mrkmctl -L
   IP address       TTL     Priority  Weight  Activity  Hostname
   ---------------  ------  --------  ------  --------  ----------
-  10.11.12.13          60  Origin         0  Active    my-host
-  10.11.12.14          60  Origin         0  Active    other-host
+  10.11.12.13          60  Origin         -  Active    my-host
+  10.11.12.14          60  Origin         -  Active    other-host
 
