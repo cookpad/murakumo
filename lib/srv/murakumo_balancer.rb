@@ -57,17 +57,17 @@ module Murakumo
     end
 
     def fix_by_src(records, max_ip_num, src_alias)
-      fix_by_src0(records, max_ip_num, src_alias) do |first_index|
-        # 先頭インデックスからのレコードを返す
-        (records + records).slice(first_index, max_ip_num)
+      fix_by_src0(records, max_ip_num, src_alias) do |new_records|
+        # そのまま評価
+        new_records
       end
     end
 
     def fix_by_src2(records, max_ip_num, src_alias)
-      fix_by_src0(records, max_ip_num, src_alias) do |first_index|
+      fix_by_src0(records, max_ip_num, src_alias) do |new_records|
         # 先頭 + ランダムを返す
-        first = records.delete_at(first_index)
-        [first] + records.sort_by { rand }
+        first = new_records.shift
+        [first] + new_records.sort_by { rand }
       end
     end
 
@@ -110,11 +110,16 @@ module Murakumo
         dests.slice!(0, sources.length)
       end
 
-      # 先頭インデックスを決める
-      dest_ip, first_index = sources.zip(dests).assoc(@address)
+      # 先頭を決めてローテート
+      first_index = sources.zip(dests).index {|s, d| s == @address }
 
-      yield(first_index)
-    end # fix_by_src
+      unless first_index.zero?
+        dests = (dests + dests).slice(first_index, dests.length)
+      end
+
+      # 先頭インデックスからレコードを並べ直す
+      yield(records.values_at(*dests.map {|addr, i| i }))
+    end # fix_by_src0
 
   end # Balancer
 
