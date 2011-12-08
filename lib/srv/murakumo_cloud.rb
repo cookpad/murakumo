@@ -100,7 +100,7 @@ module Murakumo
       @cache = {} if options[:enable_cache]
 
       # バランサー
-      @balancer = Balancer.new(@options[:balancing], @address, @hostname)
+      @balancer = Balancer.new(@options[:balancing], @address, @db, @logger)
     end
 
     # Control of service
@@ -460,15 +460,21 @@ module Murakumo
         return @address_records.map {|i| i.values_at('ip_address', 'ttl') }
       end
 
+      # 名前は小文字に変換
+      name = name.downcase
+
+      # ドメインが指定されていたら削除
+      name.sub!(/\.#{Regexp.escape(@options[:domain])}\Z/i, '') if @options[:domain]
+
       # 優先度の高いレコードを検索
-      records = shuffle_records(@address_records.select {|i| i['priority'] == MASTER })
+      records = shuffle_records(@address_records.select {|i| i['priority'] == MASTER }, name)
 
       # 次に優先度の高いレコードを検索
-      records.concat(shuffle_records(@address_records.select {|i| i['priority'] == SECONDARY }))
+      records.concat(shuffle_records(@address_records.select {|i| i['priority'] == SECONDARY }, name))
 
       # レコードが見つからなかった場合はバックアップを選択
       if records.empty?
-        records = shuffle_records(@address_records.select {|i| i['priority'] == BACKUP })
+        records = shuffle_records(@address_records.select {|i| i['priority'] == BACKUP }, name)
       end
 
       # それでもレコードが見つからなかった場合はオリジンを選択
@@ -532,14 +538,14 @@ module Murakumo
     private
 
     # 乱数でレコードをシャッフルする
-    def shuffle_records(records)
+    def shuffle_records(records, name)
       # レコードが1件以下の時はそのまま返す
       return records if records.length <= 1
 
       max_ip_num = [records.length, @options[:max_ip_num]].min
 
       # バランサーでソートする
-      @balancer.sort(records, max_ip_num)
+      @balancer.sort(records, max_ip_num, name)
     end
 
     # リソースレコードのデータベース作成

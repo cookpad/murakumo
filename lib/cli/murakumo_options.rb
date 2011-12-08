@@ -269,13 +269,13 @@ def murakumo_parse_args
             parse_error('configuration of a balancing is not right', dist)
           end
 
-          dist = Regexp.Regexp.new(dist, Regexp::IGNORECASE)
+          reg_dist = Regexp.Regexp.new(dist, Regexp::IGNORECASE)
 
           case algo
           when/\Arandom\Z/i
-            balancing_h[dist] = [:random]
+            balancing_h[reg_dist] = [:random]
           when /\Afix_by_src\(([^)]+)\)\Z/i
-            balancing_h[dist] = [:fix_by_src, $1]
+            balancing_h[reg_dist] = [:fix_by_src, $1]
           else
             parse_error('configuration of a balancing is not right', dist)
           end

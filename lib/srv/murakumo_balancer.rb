@@ -2,21 +2,22 @@ module Murakumo
 
   class Balancer
 
-    def initialize(algo, address, hostname)
-      @algo = algo
+    def initialize(hash, address, db, logger)
+      @hash = hash
       @address = address
-      @hostname = hostname
+      @db = db
+      @logger = logger
     end
 
-    def sort(records, max_ip_num)
+    def sort(records, max_ip_num, name)
       # アルゴリズムに応じて振り分け
-      self.send(@algo, records, max_ip_num)
+      self.send(@algo, records, max_ip_num, name)
     end
 
     private
 
     # 重み付きランダム（デフォルト）
-    def random(records, max_ip_num)
+    def random(records, max_ip_num, name)
       indices = []
       buf = []
 
@@ -41,7 +42,7 @@ module Murakumo
     end
 
     # ソースで宛先を固定
-    def fix_by_src(records, max_ip_num)
+    def fix_by_src(records, max_ip_num, name)
     end
   end # Balancer
 
