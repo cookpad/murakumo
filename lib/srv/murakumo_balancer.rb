@@ -1,3 +1,5 @@
+require 'misc/murakumo_const'
+
 module Murakumo
 
   class Balancer
@@ -10,14 +12,25 @@ module Murakumo
     end
 
     def sort(records, max_ip_num, name)
-      # アルゴリズムに応じて振り分け
-      self.send(@algo, records, max_ip_num, name)
+      # 宛先を検索
+      dest, algo = @hash.find {|k, v| k =~ name }
+
+      if algo.nil? or algo[0] == :random
+        # 設定が見つからない場合、またはランダムの場合
+        random(records, max_ip_num)
+      elsif algo[0] == :fix_by_src
+        fix_by_src(records, max_ip_num, algo[1])
+      else
+        # 未対応のアルゴリズムの場合はとりあえずランダムで返す
+        @logger.warn("distribution setup which is not right: #{[dest, algo].inspect}")
+        random(records, max_ip_num)
+      end
     end
 
     private
 
     # 重み付きランダム（デフォルト）
-    def random(records, max_ip_num, name)
+    def random(records, max_ip_num)
       indices = []
       buf = []
 
@@ -42,8 +55,51 @@ module Murakumo
     end
 
     # ソースで宛先を固定
-    def fix_by_src(records, max_ip_num, name)
-    end
+    def fix_by_src(records, max_ip_num, src_alias)
+      # ソースエイリアスでIPアドレスを探す
+      sources = @db.execute(<<-EOS, src_alias, ACTIVE)
+        SELECT ip_address FROM records
+        WHERE name = ? AND activity = ?
+      EOS
+
+      # ソースが見つからない場合はとりあえずランダムで
+      if sources.empty?
+        @logger.warn("source is not found: #{src_alias}")
+        return random(records, max_ip_num)
+      end
+
+      # ソースが自分を含んでいない場合はとりあえずランダムで
+      unless sources.include?(@address)
+        @logger.warn("sources does not contain self: #{@address}")
+        return random(records, max_ip_num)
+      end
+
+      # 宛先をソート
+      dests = (0...records.length).map {|i| [records[i]['ip_address'], i] }.sort_by {|a, b| a }
+
+      # ソースが一つだけなら先頭のインデックスを返す
+      if sources.length == 1
+        return records[dests.first[1]]
+      end
+
+      # IPアドレスを取り出してソート
+      sources = sources.map {|i| i['ip_address'] }.sort
+
+      # 数をそろえる
+      if sources.length < dests.length
+        dests.slice!(0, sources.length)
+      elsif sources.length > dests.length
+        dests = dests * (sources.length.to_f / dests.length).ceil
+        dests.slice!(0, sources.length)
+      end
+
+      # 先頭インデックスを決める
+      dest_ip, first_index = sources.zip(dests).assoc(@address)
+
+      # 先頭インデックスからのレコードを返す
+      (records + records).slice(first_index, max_ip_num)
+    end # fix_by_src
+
   end # Balancer
 
 end # Murakumo
