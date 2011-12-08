@@ -12,6 +12,11 @@ module Murakumo
     end
 
     def sort(records, max_ip_num, name)
+      # ハッシュが空ならランダムで
+      if @hash.nil? or @hash.empty?
+        random(records, max_ip_num)
+      end
+
       # 宛先を検索
       dest, algo = @hash.find {|k, v| k =~ name }
 
