@@ -276,6 +276,8 @@ def murakumo_parse_args
             balancing_h[reg_dest] = [:random]
           when /\Afix_by_src\(([^)]+)\)\Z/i
             balancing_h[reg_dest] = [:fix_by_src, $1]
+          when /\Afix_by_src2\(([^)]+)\)\Z/i
+            balancing_h[reg_dest] = [:fix_by_src2, $1]
           else
             parse_error('configuration of a balancing is not right', dest)
           end

@@ -20,6 +20,8 @@ module Murakumo
         random(records, max_ip_num)
       elsif algo[0] == :fix_by_src
         fix_by_src(records, max_ip_num, algo[1])
+      elsif algo[0] == :fix_by_src2
+        fix_by_src2(records, max_ip_num, algo[1])
       else
         # 未対応のアルゴリズムの場合はとりあえずランダムで返す
         @logger.warn("distribution setup which is not right: #{[dest, algo].inspect}")
@@ -54,8 +56,23 @@ module Murakumo
       records.values_at(*indices)
     end
 
-    # ソースで宛先を固定
     def fix_by_src(records, max_ip_num, src_alias)
+      fix_by_src0(records, max_ip_num, src_alias) do |first_index|
+        # 先頭インデックスからのレコードを返す
+        (records + records).slice(first_index, max_ip_num)
+      end
+    end
+
+    def fix_by_src2(records, max_ip_num, src_alias)
+      fix_by_src0(records, max_ip_num, src_alias) do |first_index|
+        # 先頭 + ランダムを返す
+        first = records.delete_at(first_index)
+        [first] + records.sort_by { rand }
+      end
+    end
+
+    # ソースで宛先を固定
+    def fix_by_src0(records, max_ip_num, src_alias)
       # ソースエイリアスでIPアドレスを探す
       sources = @db.execute(<<-EOS, src_alias, ACTIVE)
         SELECT ip_address FROM records
@@ -96,8 +113,7 @@ module Murakumo
       # 先頭インデックスを決める
       dest_ip, first_index = sources.zip(dests).assoc(@address)
 
-      # 先頭インデックスからのレコードを返す
-      (records + records).slice(first_index, max_ip_num)
+      yield(first_index)
     end # fix_by_src
 
   end # Balancer
