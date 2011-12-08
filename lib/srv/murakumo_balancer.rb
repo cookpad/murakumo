@@ -40,6 +40,9 @@ module Murakumo
       records.values_at(*indices)
     end
 
+    # ソースで宛先を固定
+    def fix_by_src(records, max_ip_num)
+    end
   end # Balancer
 
 end # Murakumo

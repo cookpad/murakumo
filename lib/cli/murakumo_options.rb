@@ -261,15 +261,25 @@ def murakumo_parse_args
 
       # balancing
       if options.config_file and (balancing = options.config_file['balancing'])
-        balancing = balancing.donwcase
+        balancing.kind_of?(Hash) or parse_error('configuration of a balancing is not right')
+        balancing_h = options[:balancing] = {}
 
-        unless %w(random fix_by_host fix_by_addr).include?(balancing)
-          parse_error('configuration of a balancing is not right')
+        balancing.map {|k, v| [k.to_s.strip.downcase, v.to_s.strip.downcase] }.each do |dist, algo|
+          if dist.empty? or algo.empty?
+            parse_error('configuration of a balancing is not right', dist)
+          end
+
+          dist = Regexp.Regexp.new(dist, Regexp::IGNORECASE)
+
+          case algo
+          when/\Arandom\Z/i
+            balancing_h[dist] = [:random]
+          when /\Afix_by_src\(([^)]+)\)\Z/i
+            balancing_h[dist] = [:fix_by_src, $1]
+          else
+            parse_error('configuration of a balancing is not right', dist)
+          end
         end
-
-        options[:balancing] = balancing.to_sym
-      else
-        options[:balancing] = :random
       end # balancing
 
     end # after
