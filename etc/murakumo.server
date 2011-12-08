@@ -77,6 +77,10 @@ max-ip-num: 8
 #addr-includes: ^10\..*
 #addr-excludes: 
 
+#balancing:
+#  ^app-.*: random         # destination alias regex: algorithm
+#  ^db-.*: fix_by_src(zoo) # destination alias regex: fix_by_host(<source alias name>)
+
 #notification:
 #  host: my.smtp.server
 #  #port: 25
