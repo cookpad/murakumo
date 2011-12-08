@@ -3,6 +3,7 @@ require 'rgossip2'
 require 'sqlite3'
 
 require 'srv/murakumo_health_checker'
+require 'srv/murakumo_balancer'
 require 'misc/murakumo_const'
 
 module Murakumo
@@ -97,6 +98,9 @@ module Murakumo
 
       # キャッシュ
       @cache = {} if options[:enable_cache]
+
+      # バランサー
+      @balancer = Balancer.new(@options[:balancing], @address, @hostname)
     end
 
     # Control of service
@@ -534,27 +538,8 @@ module Murakumo
 
       max_ip_num = [records.length, @options[:max_ip_num]].min
 
-      indices = []
-      buf = []
-
-      # インデックスをWeight分追加
-      records.each_with_index do |r, i|
-        weight = r['weight']
-        weight.times { buf << i }
-      end
-
-      # インデックスをシャッフル
-      buf = buf.sort_by{ rand }
-
-      # ランダムにインデックスを取り出す
-      loop do
-        indices << buf.shift
-        indices.uniq!
-        break if (indices.size >= max_ip_num or buf.empty?)
-      end
-
-      # インデックスのレコードを返す
-      records.values_at(*indices)
+      # バランサーでソートする
+      @balancer.sort(records, max_ip_num)
     end
 
     # リソースレコードのデータベース作成
