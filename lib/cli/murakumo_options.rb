@@ -259,6 +259,19 @@ def murakumo_parse_args
         end
       end # {name,addr}-{includes,excludes}
 
+      # balancing
+      if options.config_file and (balancing = options.config_file['balancing'])
+        balancing = balancing.donwcase
+
+        unless %w(random fix_by_host fix_by_addr).include?(balancing)
+          parse_error('configuration of a balancing is not right')
+        end
+
+        options[:balancing] = balancing.to_sym
+      else
+        options[:balancing] = :random
+      end # balancing
+
     end # after
 
     error do |e|
