@@ -182,6 +182,10 @@ module Murakumo
             hash[key] = @options.config_file[key]
           end
         end
+
+        if @options.config_file['balancing']
+          hash['balancing'] = @options.config_file['balancing']
+        end
       end # 設定ファイルのみの項目
 
       return hash
