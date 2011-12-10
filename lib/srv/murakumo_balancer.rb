@@ -112,7 +112,7 @@ module Murakumo
 
       # ソースが一つだけなら先頭のインデックスを返す
       if sources.length == 1
-        return records[dests.first[1]]
+        return [records[dests.first[1]]]
       end
 
       # 数をそろえる
