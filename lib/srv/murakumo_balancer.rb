@@ -26,7 +26,7 @@ module Murakumo
       end
 
       algo = attrs[:algorithm]
-      max_ip_num = [max_ip_num, attrs[:max_ip_num]].min
+      max_ip_num = attrs[:max_ip_num] || max_ip_num
       sources = attrs[:sources]
 
       case algo
@@ -73,7 +73,7 @@ module Murakumo
     def fix_by_src(records, max_ip_num, src_aliases)
       fix_by_src0(records, max_ip_num, src_aliases) do |new_records|
         # そのまま評価
-        new_records
+        new_records.slice(0, max_ip_num)
       end
     end
 
@@ -81,7 +81,7 @@ module Murakumo
       fix_by_src0(records, max_ip_num, src_aliases) do |new_records|
         # 先頭 + ランダムを返す
         first = new_records.shift
-        [first] + new_records.sort_by { rand }
+        [first] + new_records.slice(0, max_ip_num).sort_by { rand }
       end
     end
 
