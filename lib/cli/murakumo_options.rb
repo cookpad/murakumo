@@ -273,7 +273,7 @@ def murakumo_parse_args
             parse_error('configuration of a balancing is not right', dest)
           end
 
-          attrs_algorithm = (attrs['algorithm'] || '').strip.downcase
+          attrs_algorithm = (attrs['algorithm'] || 'random').strip.downcase
           attrs_max_ip_num = attrs['max-ip-num']
           attrs_sources = (attrs['sources'] || '').strip.split(/\s*,\s*).map {|i| i.strip }
 
