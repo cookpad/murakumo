@@ -72,6 +72,7 @@ module Murakumo
 
     def fix_by_src(records, max_ip_num, src_aliases)
       fix_by_src0(records, max_ip_num, src_aliases) do |new_records|
+p new_records
         # そのまま評価
         new_records.slice(0, max_ip_num)
       end
@@ -109,11 +110,6 @@ module Murakumo
 
       # 宛先をソート
       dests = (0...records.length).map {|i| [records[i]['ip_address'], i] }.sort_by {|a, b| a }
-
-      # ソースが一つだけなら先頭のインデックスを返す
-      if sources.length == 1
-        return [records[dests.first[1]]]
-      end
 
       # 数をそろえる
       if sources.length < dests.length
