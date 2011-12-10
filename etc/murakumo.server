@@ -78,9 +78,16 @@ max-ip-num: 8
 #addr-excludes: 
 
 #balancing:
-#  ^app-.*: random             # dest alias regex: algorithm
-#  ^db-.*: fix_by_src(zoo)     # dest alias regex: fix_by_host(<source alias name>)
-#  ^cache-.*: fix_by_src2(zoo) # dest alias regex: fix_by_host2(<source alias name>)
+#  ^app-.*:                  # destination  alias regex
+#    algorithm:  random      # balancing algorithm
+#    max-ip-num: 1
+#  ^db-.*:                   # destination  alias regex
+#    algorithm:  fix_by_src  # balancing algorithm
+#    sources:    foo, bar    # source alias name
+#    max-ip-num: 8
+#  ^cache-.*:                # destination  alias regex
+#    algorithm:  fix_by_src2 # balancing algorithm
+#    sources:    zoo         # source alias name
 
 #notification:
 #  host: my.smtp.server

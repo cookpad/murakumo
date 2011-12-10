@@ -264,23 +264,47 @@ def murakumo_parse_args
         balancing.kind_of?(Hash) or parse_error('configuration of a balancing is not right')
         balancing_h = options[:balancing] = {}
 
-        balancing.map {|k, v| [k.to_s.strip.downcase, v.to_s.strip.downcase] }.each do |dest, algo|
-          if dest.empty? or algo.empty?
+        balancing.map {|k, v| [k.to_s.strip.downcase, v] }.each do |dest, attrs|
+          if dest.empty? or attrs.empty?
+            parse_error('configuration of a balancing is not right', dest)
+          end
+
+          unless attrs.kind_of?(Hash)
+            parse_error('configuration of a balancing is not right', dest)
+          end
+
+          attrs_algorithm = (attrs['algorithm'] || '').strip.downcase
+          attrs_max_ip_num = attrs['max-ip-num']
+          attrs_sources = (attrs_sources['sources'] || '').strip.split(/\s*,\s*).map {|i| i.strip }
+
+          unless %w(random fix_by_src fix_by_src2).include?(attrs_algorithm)
+            parse_error('configuration of a balancing is not right', dest)
+          end
+
+          unless attrs_max_ip_num.nil? or (/\A\d+\Z/ =~ attrs_max_ip_num and attrs_max_ip_num.to_i > 0)
+            parse_error('configuration of a balancing is not right', dest)
+          end
+
+          unless attrs_sources.empty? or attrs_sources.all? {|i| /\A[0-9a-z\.\-]+\Z/ =~ i }
             parse_error('configuration of a balancing is not right', dest)
           end
 
           reg_dest = Regexp.Regexp.new(dest, Regexp::IGNORECASE)
 
-          case algo
-          when/\Arandom\Z/i
-            balancing_h[reg_dest] = [:random]
-          when /\Afix_by_src\(([^)]+)\)\Z/i
-            balancing_h[reg_dest] = [:fix_by_src, $1]
-          when /\Afix_by_src2\(([^)]+)\)\Z/i
-            balancing_h[reg_dest] = [:fix_by_src2, $1]
-          else
-            parse_error('configuration of a balancing is not right', dest)
+          attrs_h = {
+            :algorithm  => attrs_sources.to_sym,
+            :max_ip_num => (attrs_max_ip_num || options[:max_ip_num]).to_i
+          }
+
+          case attrs_algorithm
+          when 'random'
+            parse_error('configuration of a balancing is not right', dest) unless attrs_sources.empty?
+          when 'fix_by_src', 'fix_by_src2'
+            parse_error('configuration of a balancing is not right', dest) if attrs_sources.empty?
+            attrs_h[:sources] = attrs_sources
           end
+
+          balancing_h[reg_dest] = attrs_h
         end
       end # balancing
 
