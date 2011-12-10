@@ -292,7 +292,7 @@ def murakumo_parse_args
           reg_dest = Regexp.new(dest, Regexp::IGNORECASE)
 
           attrs_h = {
-            :algorithm  => attrs_sources.to_sym,
+            :algorithm  => attrs_algorithm.to_sym,
             :max_ip_num => (attrs_max_ip_num || options[:max_ip_num]).to_i
           }
 
