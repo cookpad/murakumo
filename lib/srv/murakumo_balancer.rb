@@ -14,19 +14,28 @@ module Murakumo
     def sort(records, max_ip_num, name)
       # ハッシュが空ならランダムで
       if @hash.nil? or @hash.empty?
-        random(records, max_ip_num)
+        return random(records, max_ip_num)
       end
 
       # 宛先を検索
-      dest, algo = @hash.find {|k, v| k =~ name }
+      dest, attrs = @hash.find {|k, v| k =~ name }
 
-      if algo.nil? or algo[0] == :random
-        # 設定が見つからない場合、またはランダムの場合
+      if dest.nil? or attrs.nil?
+        # 設定が見つからない場合はとりあえずランダムで
+        return random(records, max_ip_num)
+      end
+
+      algo = attrs[:algorithm]
+      max_ip_num = [max_ip_num, attrs[:max_ip_num]].min
+      sources = attrs[:sources]
+
+      case algo
+      when :random
         random(records, max_ip_num)
-      elsif algo[0] == :fix_by_src
-        fix_by_src(records, max_ip_num, algo[1])
-      elsif algo[0] == :fix_by_src2
-        fix_by_src2(records, max_ip_num, algo[1])
+      when :fix_by_src
+        fix_by_src(records, max_ip_num, sources)
+      when :fix_by_src2
+        fix_by_src2(records, max_ip_num, sources)
       else
         # 未対応のアルゴリズムの場合はとりあえずランダムで返す
         @logger.warn("distribution setup which is not right: #{[dest, algo].inspect}")
@@ -61,15 +70,15 @@ module Murakumo
       records.values_at(*indices)
     end
 
-    def fix_by_src(records, max_ip_num, src_alias)
-      fix_by_src0(records, max_ip_num, src_alias) do |new_records|
+    def fix_by_src(records, max_ip_num, src_aliases)
+      fix_by_src0(records, max_ip_num, src_aliases) do |new_records|
         # そのまま評価
         new_records
       end
     end
 
-    def fix_by_src2(records, max_ip_num, src_alias)
-      fix_by_src0(records, max_ip_num, src_alias) do |new_records|
+    def fix_by_src2(records, max_ip_num, src_aliases)
+      fix_by_src0(records, max_ip_num, src_aliases) do |new_records|
         # 先頭 + ランダムを返す
         first = new_records.shift
         [first] + new_records.sort_by { rand }
@@ -77,16 +86,18 @@ module Murakumo
     end
 
     # ソースで宛先を固定
-    def fix_by_src0(records, max_ip_num, src_alias)
+    def fix_by_src0(records, max_ip_num, src_aliases)
+      joined = src_aliases.map {|i| "'#{i.downcase}'" }.join(',')
+
       # ソースエイリアスでIPアドレスを探す
-      sources = @db.execute(<<-EOS, src_alias, ACTIVE)
+      sources = @db.execute(<<-EOS, ACTIVE)
         SELECT ip_address FROM records
-        WHERE name = ? AND activity = ?
+        WHERE name IN (#{joined}) AND activity = ?
       EOS
 
       # ソースが見つからない場合はとりあえずランダムで
       if sources.empty?
-        @logger.warn("source is not found: #{src_alias}")
+        @logger.warn("source is not found: #{src_aliases.join(',')}")
         return random(records, max_ip_num)
       end
 

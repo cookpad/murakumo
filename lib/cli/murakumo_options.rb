@@ -275,7 +275,7 @@ def murakumo_parse_args
 
           attrs_algorithm = (attrs['algorithm'] || '').strip.downcase
           attrs_max_ip_num = attrs['max-ip-num']
-          attrs_sources = (attrs_sources['sources'] || '').strip.split(/\s*,\s*).map {|i| i.strip }
+          attrs_sources = (attrs['sources'] || '').strip.split(/\s*,\s*).map {|i| i.strip }
 
           unless %w(random fix_by_src fix_by_src2).include?(attrs_algorithm)
             parse_error('configuration of a balancing is not right', dest)
