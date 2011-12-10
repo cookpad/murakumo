@@ -281,7 +281,7 @@ def murakumo_parse_args
             parse_error('configuration of a balancing is not right', dest)
           end
 
-          unless attrs_max_ip_num.nil? or (/\A\d+\Z/ =~ attrs_max_ip_num and attrs_max_ip_num.to_i > 0)
+          unless attrs_max_ip_num.nil? or (/\A\d+\Z/ =~ attrs_max_ip_num.to_s and attrs_max_ip_num.to_i > 0)
             parse_error('configuration of a balancing is not right', dest)
           end
 
@@ -311,7 +311,8 @@ def murakumo_parse_args
     end # after
 
     error do |e|
-      abort(e.message)
+      #abort(e.message)
+      abort(e.backtrace.join("\n"))
     end
   end
 end
