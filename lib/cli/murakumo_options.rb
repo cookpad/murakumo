@@ -289,7 +289,7 @@ def murakumo_parse_args
             parse_error('configuration of a balancing is not right', dest)
           end
 
-          reg_dest = Regexp.Regexp.new(dest, Regexp::IGNORECASE)
+          reg_dest = Regexp.new(dest, Regexp::IGNORECASE)
 
           attrs_h = {
             :algorithm  => attrs_sources.to_sym,
@@ -311,7 +311,7 @@ def murakumo_parse_args
     end # after
 
     error do |e|
-      #abort(e.message)
+      puts e.message
       abort(e.backtrace.join("\n"))
     end
   end
