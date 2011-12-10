@@ -26,7 +26,7 @@ module Murakumo
       end
 
       algo = attrs[:algorithm]
-      max_ip_num = attrs[:max_ip_num] || max_ip_num
+      max_ip_num = [(attrs[:max_ip_num] || max_ip_num), records.length].min
       sources = attrs[:sources]
 
       case algo
@@ -72,7 +72,6 @@ module Murakumo
 
     def fix_by_src(records, max_ip_num, src_aliases)
       fix_by_src0(records, max_ip_num, src_aliases) do |new_records|
-p new_records
         # そのまま評価
         new_records.slice(0, max_ip_num)
       end
@@ -82,7 +81,7 @@ p new_records
       fix_by_src0(records, max_ip_num, src_aliases) do |new_records|
         # 先頭 + ランダムを返す
         first = new_records.shift
-        [first] + new_records.slice(0, max_ip_num).sort_by { rand }
+        [first] + new_records.slice(0, max_ip_num - 1).sort_by { rand }
       end
     end
 
@@ -110,20 +109,21 @@ p new_records
 
       # 宛先をソート
       dests = (0...records.length).map {|i| [records[i]['ip_address'], i] }.sort_by {|a, b| a }
+      dests_orig = dests
 
       # 数をそろえる
       if sources.length < dests.length
-        dests.slice!(0, sources.length)
+        dests = dests.slice(0, sources.length)
       elsif sources.length > dests.length
-        dests = dests * (sources.length.to_f / dests.length).ceil
-        dests.slice!(0, sources.length)
+        dests = dests_orig = dests * (sources.length.to_f / dests.length).ceil
+        dests = dests.slice(0, sources.length)
       end
 
       # 先頭を決めてローテート
       first_index = sources.zip(dests).index {|s, d| s == @address }
 
       unless first_index.zero?
-        dests = (dests + dests).slice(first_index, dests.length)
+        dests = (dests_orig + dests_orig).slice(first_index, dests.length)
       end
 
       # 先頭インデックスからレコードを並べ直す
