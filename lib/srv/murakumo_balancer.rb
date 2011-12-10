@@ -90,7 +90,7 @@ module Murakumo
       joined = src_aliases.map {|i| "'#{i.downcase}'" }.join(',')
 
       # ソースエイリアスでIPアドレスを探す
-      sources = @db.execute(<<-EOS, ACTIVE)
+      sources = @db.execute(<<-EOS, ACTIVE).map {|i| i['ip_address'] }.sort
         SELECT ip_address FROM records
         WHERE name IN (#{joined}) AND activity = ?
       EOS
@@ -114,9 +114,6 @@ module Murakumo
       if sources.length == 1
         return records[dests.first[1]]
       end
-
-      # IPアドレスを取り出してソート
-      sources = sources.map {|i| i['ip_address'] }.sort
 
       # 数をそろえる
       if sources.length < dests.length

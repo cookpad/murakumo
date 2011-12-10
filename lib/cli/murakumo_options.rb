@@ -311,8 +311,7 @@ def murakumo_parse_args
     end # after
 
     error do |e|
-      puts e.message
-      abort(e.backtrace.join("\n"))
+      abort(e.message)
     end
   end
 end
