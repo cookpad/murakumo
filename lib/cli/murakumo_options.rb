@@ -3,6 +3,7 @@ require 'optopus'
 require 'resolv'
 require 'socket'
 
+require 'cli/murakumo_initializer_context'
 require 'misc/murakumo_const'
 
 unless defined?(Version)
@@ -11,6 +12,13 @@ end
 
 def murakumo_parse_args
   optopus do
+    before do |options|
+      if (script = options[:init_script])
+        script = File.read(script) if File.exists?(script)
+        Murakumo::InitializerContext.new(options).instance_eval(script)
+      end
+    end
+
     desc 'key for authentication (required)'
     option :auth_key, '-K', '--auth-key STRING_OR_PATH', :required => true
 

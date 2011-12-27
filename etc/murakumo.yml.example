@@ -12,6 +12,13 @@ max-ip-num: 8
 #domain: ap-northeast-1.compute.internal
 #enable-cache: true
 
+# specify the script which initializes a setup
+#init-script: |
+#  @options[:initial_nodes] = '10.11.12.20, 10.11.12.21'
+
+# (another way)
+#init-script: /foo/bar/zoo/murakumo-init.rb
+
 #name-includes: ^app-\d+$, ^db-\d+$
 #name-excludes: 
 #addr-includes: ^10\..*
