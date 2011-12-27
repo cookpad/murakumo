@@ -71,8 +71,8 @@ module Murakumo
       # ヘルスチェック
       @health_checkers = {}
 
-      if options.config_file and options.config_file['health-check']
-        health_check = options.config_file['health-check']
+      if options[:health_check]
+        health_check = options[:health_check]
 
         if health_check.kind_of?(Hash)
           health_check.each do |name, conf|
