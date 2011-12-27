@@ -34,7 +34,7 @@ module Murakumo
       # スクリプトの読み込み
       @script = options['script']
       raise "health check script of #{@name} is not found" unless @script
-      @script = File.read(script) if File.exists?(@script)
+      @script = File.read(@script) if File.exists?(@script)
 
       # 通知オブジェクトの設定
       if options[:notification]
