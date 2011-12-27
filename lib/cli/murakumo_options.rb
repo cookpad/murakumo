@@ -146,36 +146,37 @@ def murakumo_parse_args
       options[:host][2] = (options[:host][2] || 60).to_i # TTL
 
       # aliases
-      config_file_aliases = options.config_file ? options.config_file['alias'] : nil
-
-      if config_file_aliases
-       if config_file_aliases.kind_of?(Array)
-          options[:aliases] = config_file_aliases.map {|i| i.split(',') }
-        else
-          options[:aliases] = [options[:aliases]]
+      if options[:aliases]
+        unless options[:aliases].kind_of?(Array)
+          parse_error('configuration of a aliases is not right')
         end
-      end
 
-      options[:aliases] = (options[:aliases] || []).map do |r|
-        r = r.map {|i| i.to_s.strip }
-        [nil, 60, 'master', 100].each_with_index {|v, i| r[i] ||= v }
+        # 設定ファイルからの設定の場合は「配列の配列」に変換
+        if options[:aliases][0].kind_of?(String)
+          options[:aliases] = options[:aliases].map {|i| i.split(',') }
+        end
 
-        priority = case r[2].to_s
-                   when /master/i
-                     Murakumo::MASTER
-                   when /secondary/i
-                     Murakumo::SECONDARY
-                   else
-                     Murakumo::BACKUP
-                   end
+        options[:aliases] = (options[:aliases] || []).map do |r|
+          r = r.map {|i| i.to_s.strip }
+          [nil, 60, 'master', 100].each_with_index {|v, i| r[i] ||= v }
 
-        [
-          r[0],      # name
-          r[1].to_i, # TTL
-          priority,
-          r[3].to_i, # weight
-        ]
-      end
+          priority = case r[2].to_s
+                     when /master/i
+                       Murakumo::MASTER
+                     when /secondary/i
+                       Murakumo::SECONDARY
+                     else
+                       Murakumo::BACKUP
+                     end
+
+          [
+            r[0],      # name
+            r[1].to_i, # TTL
+            priority,
+            r[3].to_i, # weight
+          ]
+        end
+      end # aliases
 
       # logger
       if not options[:log_path] and options[:daemon]
@@ -193,7 +194,7 @@ def murakumo_parse_args
       end
 
       # health check
-      if options.config_file and (health_check = options.config_file['health-check'])
+      if (health_check = options[:health_check])
         health_check.kind_of?(Hash) or parse_error('configuration of a health check is not right')
 
         health_check.each do |name, conf|
@@ -213,7 +214,7 @@ def murakumo_parse_args
       end # health check
 
       # notification
-      if options.config_file and (ntfc = options.config_file['notification'])
+      if (ntfc = options[:notification])
         ntfc.kind_of?(Hash) or parse_error('configuration of a notification is not right')
 
         if (ntfc['host'] || '').empty?
@@ -250,17 +251,17 @@ def murakumo_parse_args
       end # notification
 
       # {name,addr}-{includes,excludes}
-      if options.config_file
-        %w(name-includes name-excludes addr-includes addr-excludes).each do |key|
-          unless (reg_vals = (options.config_file[key] || '').strip).empty?
-            reg_vals = reg_vals.split(/\s*,\s*/).select {|i| not i.empty? }.map {|i| Regexp.new(i.strip, Regexp::IGNORECASE) }
-            options[key.gsub('-', '_').to_sym] = reg_vals
-          end
+      [:name_includes :name_excludes :addr_includes :addr_excludes].each do |key|
+        unless (reg_vals = (options[key] || '').strip).empty?
+          reg_vals = reg_vals.split(/\s*,\s*/).select {|i| not i.empty? }.map {|i| Regexp.new(i.strip, Regexp::IGNORECASE) }
+          options[key] = reg_vals
+        else
+          options.delete(key)
         end
       end # {name,addr}-{includes,excludes}
 
       # balancing
-      if options.config_file and (balancing = options.config_file['balancing'])
+      if (balancing = options[:balancing])
         balancing.kind_of?(Hash) or parse_error('configuration of a balancing is not right')
         balancing_h = options[:balancing] = {}
 
@@ -307,7 +308,6 @@ def murakumo_parse_args
           balancing_h[reg_dest] = attrs_h
         end
       end # balancing
-
     end # after
 
     error do |e|
