@@ -13,7 +13,7 @@ end
 def murakumo_parse_args
   optopus do
     before do |options|
-      if (script = options[:init_script])
+      if (script = options['init-script'])
         script = File.read(script) if File.exists?(script)
         Murakumo::InitializerContext.new(options).instance_eval(script)
       end
