@@ -259,7 +259,7 @@ def murakumo_parse_args
       end # notification
 
       # {name,addr}-{includes,excludes}
-      [:name_includes :name_excludes :addr_includes :addr_excludes].each do |key|
+      [:name_includes, :name_excludes, :addr_includes, :addr_excludes].each do |key|
         unless (reg_vals = (options[key] || '').strip).empty?
           reg_vals = reg_vals.split(/\s*,\s*/).select {|i| not i.empty? }.map {|i| Regexp.new(i.strip, Regexp::IGNORECASE) }
           options[key] = reg_vals
