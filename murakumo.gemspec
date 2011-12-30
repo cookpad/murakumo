@@ -11,6 +11,7 @@ Gem::Specification.new do |spec|
   spec.executables << 'murakumo'
   spec.executables << 'mrkmctl'
   spec.executables << 'murakumo-install-init-script'
+  spec.executables << 'murakumo-show-ip-address'
   spec.add_dependency('rubydns', '~> 0.3.3')
   spec.add_dependency('rgossip2', '>= 0.1.7')
   spec.add_dependency('optopus', '>= 0.2.2')
