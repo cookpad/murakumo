@@ -44,7 +44,6 @@ module Murakumo
         end
       end
     end
-
     private_class_method :walk_item
 
   end # Util
