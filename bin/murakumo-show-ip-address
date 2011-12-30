@@ -1,2 +1,5 @@
 #!/usr/bin/env ruby
-puts `/sbin/ifconfig eth0 | awk -F'[: ]+' '/^eth0/,/^$/{if(/inet addr/) print $4}'`.strip
+$: << File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
+require 'util/murakumo_self_ip_address'
+
+puts Murakumo::Util.self_ip_address
