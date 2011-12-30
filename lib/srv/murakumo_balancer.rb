@@ -81,7 +81,7 @@ module Murakumo
       fix_by_src0(records, max_ip_num, src_aliases) do |new_records|
         # 先頭 + ランダムを返す
         first = new_records.shift
-        [first] + new_records.slice(0, max_ip_num - 1).sort_by { rand }
+        [first] + new_records.sort_by { rand }.slice(0, max_ip_num - 1)
       end
     end
 
@@ -122,9 +122,8 @@ module Murakumo
       # 先頭を決めてローテート
       first_index = sources.zip(dests).index {|s, d| s == @address }
 
-      unless first_index.zero?
-        dests = (dests_orig + dests_orig).slice(first_index, dests.length)
-      end
+      # 元の配列に戻す
+      dests = (dests_orig + dests_orig).slice(first_index, dests_orig.length)
 
       # 先頭インデックスからレコードを並べ直す
       yield(records.values_at(*dests.map {|addr, i| i }))
