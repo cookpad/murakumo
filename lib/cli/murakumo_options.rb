@@ -184,6 +184,8 @@ def murakumo_parse_args
             r[3].to_i, # weight
           ]
         end
+      else
+        options[:aliases] = []
       end # aliases
 
       # logger
