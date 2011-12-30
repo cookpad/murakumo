@@ -10,3 +10,10 @@ hostname = tags['Name'] || `curl -s http://169.254.169.254/latest/meta-data/loca
 
 # rewrite host option
 @options['host'] = "#{ip_addr}, #{hostname}"
+
+# get instances
+instances = Murakumo::Util.ec2_instances(AMAZON_ACCESS_KEY_ID, AMAZON_SECRET_ACCESS_KEY)
+
+# rewrite initial-nodes
+nodes = instances.map {|i| i['ipAddress'] || '' }.select {|i| not i.empty? }
+@options['initial-nodes'] = nodes.join(',') unless nodes.empty?
