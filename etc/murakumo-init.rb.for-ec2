@@ -1,0 +1,12 @@
+AMAZON_ACCESS_KEY_ID = '...'
+AMAZON_SECRET_ACCESS_KEY = '...'
+
+# get self ip address
+ip_addr = Murakumo::Util.self_ip_address
+
+# get hostname
+tags = Murakumo::Util.ec2_tags(AMAZON_ACCESS_KEY_ID, AMAZON_SECRET_ACCESS_KEY)
+hostname = tags['Name'] || `curl -s http://169.254.169.254/latest/meta-data/local-hostname`
+
+# rewrite host option
+@options['host'] = "#{ip_addr}, #{hostname}"
