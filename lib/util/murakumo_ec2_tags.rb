@@ -5,19 +5,9 @@ require 'util/murakumo_ec2_client'
 
 module Murakumo
 
-  module Util
+  class Util
 
-    def ec2_tags(access_key, secret_key, endpoint = nil, instance_id = nil)
-      unless endpoint
-        local_hostname = Net::HTTP.get('169.254.169.254', '/latest/meta-data/local-hostname')
-
-        if /\A[^.]+\.([^.]+)\.compute\.internal\Z/ =~ local_hostname
-          endpoint = $1
-        else
-          endpoint = 'us-east-1'
-        end
-      end
-
+    def self.ec2_tags(access_key, secret_key, endpoint = nil, instance_id = nil)
       unless instance_id
         instance_id = Net::HTTP.get('169.254.169.254', '/latest/meta-data/instance-id')
       end
@@ -35,8 +25,6 @@ module Murakumo
 
       return tags
     end
-
-    module_function :ec2_tags
 
   end # Util
 

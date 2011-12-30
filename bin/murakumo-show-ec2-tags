@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 $: << File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
+
 require 'optparse'
+
 require 'util/murakumo_ec2_tags'
 
 access_key = nil

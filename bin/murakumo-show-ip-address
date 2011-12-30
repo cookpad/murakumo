@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 $: << File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
+
 require 'util/murakumo_self_ip_address'
 
 puts Murakumo::Util.self_ip_address

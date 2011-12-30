@@ -7,14 +7,24 @@ Net::HTTP.version_1_2
 
 module Murakumo
 
-  module Util
+  class Util
 
     class EC2Client
 
       API_VERSION = '2011-12-01'
       SIGNATURE_VERSION = 2
 
-      def initialize(accessKeyId, secretAccessKey, endpoint = 'ec2.us-east-1.amazonaws.com', algorithm = :SHA256)
+      def initialize(accessKeyId, secretAccessKey, endpoint = nil, algorithm = :SHA256)
+        unless endpoint
+          local_hostname = Net::HTTP.get('169.254.169.254', '/latest/meta-data/local-hostname')
+
+          if /\A[^.]+\.([^.]+)\.compute\.internal\Z/ =~ local_hostname
+            endpoint = $1
+          else
+            endpoint = 'us-east-1'
+          end
+        end
+
         @accessKeyId = accessKeyId
         @secretAccessKey = secretAccessKey
         @endpoint = endpoint
