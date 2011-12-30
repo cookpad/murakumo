@@ -1,5 +1,5 @@
 module Murakumo
-  VERSION = '0.3.9'
+  VERSION = '0.4.0'
 
   # Priority
   MASTER = 1
