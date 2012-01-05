@@ -85,14 +85,14 @@ max-ip-num: 8
 #addr-excludes: 
 
 #balancing:
-#  ^app-.*:                  # destination  alias regex
+#  ^app-.*:                  # destination alias regex
 #    algorithm:  random      # balancing algorithm
 #    max-ip-num: 1
-#  ^db-.*:                   # destination  alias regex
+#  ^db-.*:                   # destination alias regex
 #    algorithm:  fix_by_src  # balancing algorithm
 #    sources:    foo, bar    # source alias name (fix_by_src only)
 #    max-ip-num: 8
-#  ^cache-.*:                # destination  alias regex
+#  ^cache-.*:                # destination alias regex
 #    algorithm:  fix_by_src2 # balancing algorithm
 #    sources:    zoo         # source alias name (fix_by_src only)
 
