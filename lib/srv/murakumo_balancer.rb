@@ -110,6 +110,7 @@ module Murakumo
       # 宛先をソート
       dests = (0...records.length).map {|i| [records[i]['ip_address'], i] }.sort_by {|a, b| a }
       dests_orig = dests
+      dests_orig_len = dests_orig.length
 
       # 数をそろえる
       if sources.length < dests.length
@@ -123,7 +124,7 @@ module Murakumo
       first_index = sources.zip(dests).index {|s, d| s == @address }
 
       # 元の配列に戻す
-      dests = (dests_orig + dests_orig).slice(first_index, dests_orig.length)
+      dests = (dests_orig + dests_orig).slice(first_index, dests_orig_len)
 
       # 先頭インデックスからレコードを並べ直す
       yield(records.values_at(*dests.map {|addr, i| i }))
