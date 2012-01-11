@@ -6,7 +6,7 @@ Murakumo is the internal DNS server which manages name information using a gossi
 
 == Source Code
 
-https://bitbucket.org/winebarrel/murakumo
+https://github.com/cookpad/murakumo
 
 == Dependency
 

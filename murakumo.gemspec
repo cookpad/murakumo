@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.files             = %w(README) + Dir.glob('bin/**/*') + Dir.glob('lib/**/*') + Dir.glob('etc/**/*')
   spec.author            = 'winebarrel'
   spec.email             = 'sgwr_dts@yahoo.co.jp'
-  spec.homepage          = 'https://bitbucket.org/winebarrel/murakumo'
+  spec.homepage          = 'https://github.com/cookpad/murakumo/wiki'
   spec.bindir            = 'bin'
   spec.executables << 'murakumo'
   spec.executables << 'mrkmctl'
