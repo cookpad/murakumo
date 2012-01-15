@@ -37,7 +37,7 @@ module Murakumo
 
       # 通知オブジェクトの設定
       if options[:notification]
-        @notifier = ActivatyCheckNotifier.new(@address, @name, @logger, options[:notification])
+        @notifier = ActivityCheckNotifier.new(@address, @name, @logger, options[:notification])
       end
 
       # イベントハンドラの設定
@@ -151,8 +151,33 @@ module Murakumo
     private
 
     def validate_activity
-      # XXX:
-      true
+      records = @cloud.db.execute(<<-EOS, @name, ACTIVE)
+        SELECT ip_address, priority FROM records
+        WHERE name = ? AND activity = ?
+      EOS
+
+      # マスタに自IPが含まれているならアクティブ
+      masters = records.select {|i| i['priority'] == MASTER }
+      if masters.any? {|i| i['ip_address'] == @address }
+        return true
+      end
+
+      # マスタがなくてセカンダリに自IPが含まれているならアクティブ
+      secondaries = records.select {|i| i['priority'] == SECONDARY }
+
+      if masters.empty? and secondaries.any? {|i| i['ip_address'] == @address }
+        return true
+      end
+
+      # マスタ・セカンダリがなくてバックアップに自IPが含まれているならアクティブ
+      backups = records.select {|i| i['priority'] == BACKUP }
+
+      if masters.empty? and secondaries.empty? and backups.any? {|i| i['ip_address'] == @address }
+        return true
+      end
+
+      # 上記以外は非アクティブ
+      return false
     end
 
     def handle_event(handler, status)

@@ -17,11 +17,11 @@ module Murakumo
     end
 
     def notify_active
-      notify('active', "#{@name} changed into the activity status.")
+      notify('active', "#{@name} became active.")
     end
 
     def notify_inactive
-      notify('inactive', "#{@name} changed into the inactivity status.")
+      notify('inactive', "#{@name} became inactive. Zzz...")
     end
 
     private
@@ -33,7 +33,7 @@ module Murakumo
         smtp.send_mail(<<-EOS, @sender, *@recipients)
 From: Murakumo Activity Check Notifier <#{@sender}>
 To: #{@recipients.join(', ')}
-Subject: #{@name}/#{@address} => #{status}
+Subject: [Activity] #{@name}/#{@address} => #{status}
 Date: #{Time.now.rfc2822}
 
 Address: #{@address}
@@ -50,6 +50,6 @@ Status: #{status}
       @logger.error("activity check failed: #{@name}: #{message}")
     end
 
-  end # HealthCheckNotifier
+  end # ActivityCheckNotifier
 
 end # Murakumo

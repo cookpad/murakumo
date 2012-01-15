@@ -34,7 +34,7 @@ module Murakumo
         smtp.send_mail(<<-EOS, @sender, *@recipients)
 From: Murakumo Health Check Notifier <#{@sender}>
 To: #{@recipients.join(', ')}
-Subject: #{@name}/#{@address} => #{status}
+Subject: [Health] #{@name}/#{@address} => #{status}
 Date: #{Time.now.rfc2822}
 
 Address: #{@address}
