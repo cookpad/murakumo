@@ -117,9 +117,6 @@ module Murakumo
       end
 
       @thread = Thread.start {
-        healthy = 0
-        unhealthy = 0
-
         begin
           while @alive
             retval = nil
