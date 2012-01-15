@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+$: << File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+require 'optparse'
+
+require 'util/murakumo_ec2_private_ip_addresses'
+
+access_key = nil
+secret_key = nil
+endpoint = nil
+instance_id = nil
+
+ARGV.options do |opt|
+  opt.on('-k', '--access-key ACCESS_KEY') {|v| access_key = v }
+  opt.on('-s', '--secret-key SECRET_KEY') {|v| secret_key = v }
+  opt.on('-r', '--region REGION') {|v| endpoint = v }
+  opt.parse!
+
+  access_key ||= ENV['AMAZON_ACCESS_KEY_ID']
+  secret_key ||= ENV['AMAZON_SECRET_ACCESS_KEY']
+
+  unless access_key and secret_key
+    puts opt.help
+    exit 1
+  end
+end
+
+ip_addrs = Murakumo::Util::ec2_private_ip_addresses(access_key, secret_key, endpoint)
+
+ip_addrs.each do |i|
+  puts i.join("\t")
+end
