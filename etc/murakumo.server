@@ -142,6 +142,7 @@ host: $ip_addr, $hostname, 60
 #  foo:
 #    start-delay: 60
 #    interval: 10
+#    init-status: undefined # active/inactive/undefined (default: undefined)
 #    active: 2    # active threshold count
 #    inactive: 2  # inactive threshold count
 #    on-activate: /foo/bar/zoo.sh   # args: address name status
@@ -149,6 +150,7 @@ host: $ip_addr, $hostname, 60
 #  bar:
 #    start-delay: 60
 #    interval: 10
+#    init-status: undefined # active/inactive/undefined (default: undefined)
 #    active: 2    # active threshold count
 #    inactive: 2  # inactive threshold count
 #    on-activate: /foo/bar/zoo.sh   # args: address name status
