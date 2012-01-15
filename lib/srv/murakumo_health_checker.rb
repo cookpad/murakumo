@@ -26,8 +26,15 @@ module Murakumo
       }.each {|key, vals|
         defval, min, max = vals
         value = (options[key] || defval).to_i
-        value = min if value < min
-        value = max if value > max
+
+        if value < min
+          value = min
+          @logger.warn("health-check/#{@name}/#{key} is smaller than #{min}. it was changed into #{min}.")
+        elsif value > max
+          value = max
+          @logger.warn("health-check/#{@name}/#{key} is larger than #{max}. it was changed into #{max}.")
+        end
+
         instance_variable_set("@#{key}", value)
       }
 
