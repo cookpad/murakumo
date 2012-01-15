@@ -220,6 +220,27 @@ def murakumo_parse_args
               parse_error('configuration of a health check is not right', "#{name}/#{key}")
             end
           end
+
+          # 各種変数の設定
+          {
+            'interval'  => [ 5, 1, 300],
+            'timeout'   => [ 5, 1, 300],
+            'healthy'   => [ 2, 1,  60],
+            'unhealthy' => [ 2, 1,  60],
+          }.each {|key, vals|
+            defval, min, max = vals
+            value = (conf[key] || defval).to_i
+
+            if value < min
+              value = min
+              parse_error("health-check/#{name}/#{key} is smaller than #{min}.", "#{name}/#{key}")
+            elsif value > max
+              value = max
+              parse_error("health-check/#{name}/#{key} is larger than #{max}.", "#{name}/#{key}")
+            end
+
+            conf[key] = value
+          }
         end
       end # health check
 

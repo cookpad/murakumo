@@ -18,23 +18,8 @@ module Murakumo
       @options = options
 
       # 各種変数の設定
-      {
-        'interval'  => [30, 1, 300],
-        'timeout'   => [ 5, 1, 300],
-        'healthy'   => [10, 2,  10],
-        'unhealthy' => [ 2, 2,  10],
-      }.each {|key, vals|
-        defval, min, max = vals
-        value = (options[key] || defval).to_i
-
-        if value < min
-          value = min
-          @logger.warn("health-check/#{@name}/#{key} is smaller than #{min}. it was changed into #{min}.")
-        elsif value > max
-          value = max
-          @logger.warn("health-check/#{@name}/#{key} is larger than #{max}. it was changed into #{max}.")
-        end
-
+      ['interval', 'timeout', 'healthy', 'unhealthy'].each {|key|
+        value = options[key]
         instance_variable_set("@#{key}", value)
       }
 
