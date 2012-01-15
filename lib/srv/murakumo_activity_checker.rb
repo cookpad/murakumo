@@ -15,7 +15,7 @@ module Murakumo
       @options = options
 
       # 各種変数の設定
-      ['interval', 'start-delay', 'active', 'inactive'].each {|key|
+      ['interval', 'start-delay', 'active', 'inactive', 'init-status'].each {|key|
         value = options[key]
         instance_variable_set("@#{key.gsub('-', '_')}", value)
       }
@@ -74,9 +74,20 @@ module Murakumo
     def start
       # 各種変数は初期状態にする
       @alive = true
-      @activated = nil # アクティビティの初期状態はnil
       @active_count = 0
       @inactive_count = 0
+
+      # アクティビティの初期状態を設定
+      case @init_status
+      when :active
+        @activated = true
+        @logger.info("initial activity: #{@name}: active")
+      when :inactive
+        @activated = false
+        @logger.info("initial activity: #{@name}: inactive")
+      else
+        @activated = nil
+      end
 
       # 既存のスレッドは破棄
       if @thread and @thread.alive?
