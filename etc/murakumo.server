@@ -134,6 +134,9 @@ host: $ip_addr, $hostname, 60
 #    unhealthy: 2
 #    script: |
 #      http_get '/index.html'
+
+# hook of server start
+#on-start: '/foo/bar/on-start.sh'
 EOF
 
   chmod 600 $conf

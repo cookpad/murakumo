@@ -74,3 +74,6 @@ health-check:
     unhealthy: 2
     script: |
       http_get '/index.html'
+
+# hook of server start
+on-start: '/foo/bar/on-start.sh'
