@@ -4,6 +4,7 @@ require 'sqlite3'
 require 'open3'
 
 require 'srv/murakumo_health_checker'
+require 'srv/murakumo_activity_checker'
 require 'srv/murakumo_balancer'
 require 'misc/murakumo_const'
 
@@ -97,6 +98,34 @@ module Murakumo
         end
       end
 
+      # アクティビティチェック
+      @activity_checkers = {}
+
+      if options[:activity_check]
+        activity_check = options[:activity_check]
+
+        if activity_check.kind_of?(Hash)
+          activity_check.each do |name, conf|
+            name = name.downcase
+
+            if options[:notification]
+              conf = conf.merge(:notification => options[:notification])
+            end
+
+            if datas.any? {|i| i[0] == name }
+              checker = ActivityChecker.new(@address, name, self, @logger, conf)
+              @activity_checkers[name] = checker
+              # アクティビティチェックはまだ起動しない
+            else
+              # ホスト名になかったら警告
+              @logger.warn("host for a activity check is not found: #{name}")
+            end
+          end
+        else
+          @logger.warn('configuration of a activity check is not right')
+        end
+      end
+
       # キャッシュ
       @cache = {} if options[:enable_cache]
 
@@ -111,6 +140,11 @@ module Murakumo
       # デーモン化すると子プロセスはすぐ死ぬので
       # このタイミングでヘルスチェックを起動
       @health_checkers.each do |name, checker|
+        checker.start
+      end
+
+      # アクティビティチェックを起動
+      @activity_checkers.each do |name, checker|
         checker.start
       end
 
@@ -196,6 +230,10 @@ module Murakumo
       if @options.config_file
         if @options.config_file['health-check']
           hash['health-check'] = @options.config_file['health-check']
+        end
+
+        if @options.config_file['activity-check']
+          hash['activity-check'] = @options.config_file['activity-check']
         end
 
         if @options.config_file['notification']
