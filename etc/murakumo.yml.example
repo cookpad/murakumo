@@ -78,7 +78,7 @@ alias:
 # hook of server start
 #on-start: /foo/bar/on-start.sh # args: address hostname
 
-#activation-check:
+#activity-check:
 #  foo:
 #    start-delay: 60
 #    interval: 5
