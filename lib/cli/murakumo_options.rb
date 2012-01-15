@@ -223,6 +223,27 @@ def murakumo_parse_args
         end
       end # health check
 
+      # activity check
+      if (activity_check = options[:activity_check])
+        activity_check.kind_of?(Hash) or parse_error('configuration of a activity check is not right')
+
+        activity_check.each do |name, conf|
+          # 'on-activate'か'on-inactivate'のいずれかが必須
+          if (conf['on-activate'] || conf['on-inactivate'] || '').empty?
+            parse_error('configuration of a health check is not right', "on-activate or on-inactivate is not defined")
+          end
+
+          %w(on-activate on-inactivate).each do |key|
+            next unless conf[key]
+            path = conf[key] = conf[key].strip
+
+            if FileTest.directory?(path) or not FileTest.executable?(path)
+              parse_error('configuration of a health check is not right', "#{name}/#{key}")
+            end
+          end
+        end
+      end # activity check
+
       # notification
       if (ntfc = options[:notification])
         ntfc.kind_of?(Hash) or parse_error('configuration of a notification is not right')
