@@ -254,6 +254,14 @@ def murakumo_parse_args
             parse_error('configuration of a health check is not right', "on-activate or on-inactivate is not defined")
           end
 
+          conf['init-status'] ||= 'undefined'
+
+          unless /\A(active|inactive|undefined)\Z/i =~ conf['init-status']
+            parse_error('configuration of a health check is not right', "#{name}/init-status")
+          end
+
+          conf['init-status'] = conf['init-status'].downcase.to_sym
+
           %w(on-activate on-inactivate).each do |key|
             next unless conf[key]
             path = conf[key] = conf[key].strip
