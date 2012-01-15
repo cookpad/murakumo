@@ -18,11 +18,11 @@ module Murakumo
     end
 
     def notify_active
-      notify('Active', "#{@name} changed into the activity status.")
+      notify('healthy', "#{@name} changed into the health status.")
     end
 
     def notify_inactive
-      notify('Inactive', "#{@name} changed into the inactivity status.")
+      notify('unhealthy', "#{@name} changed into the health status.")
     end
 
     private
@@ -32,7 +32,7 @@ module Murakumo
         smtp.read_timeout = @read_timeout if @read_timeout
 
         smtp.send_mail(<<-EOS, @sender, *@recipients)
-From: Murakumo Notifier <#{@sender}>
+From: Murakumo Health Check Notifier <#{@sender}>
 To: #{@recipients.join(', ')}
 Subject: #{@name}/#{@address} => #{status}
 Date: #{Time.now.rfc2822}
@@ -48,7 +48,7 @@ Status: #{status}
       @logger.info("sent the notice: #{status}")
     rescue Exception => e
       message = (["#{e.class}: #{e.message}"] + (e.backtrace || [])).join("\n\tfrom ")
-      @logger.error("healthcheck failed: #{@name}: #{message}")
+      @logger.error("health check failed: #{@name}: #{message}")
     end
 
   end # HealthCheckNotifier

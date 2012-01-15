@@ -94,10 +94,10 @@ module Murakumo
       case activity
       when ACTIVE
         @notifier.notify_active if @notifier
-        handle_event(@on_activate, 'active') if @on_activate
+        handle_event(@on_activate, 'healthy') if @on_activate
       when INACTIVE
         @notifier.notify_inactive if @notifier
-        handle_event(@on_inactivate, 'inactive') if @on_inactivate
+        handle_event(@on_inactivate, 'unhealthy') if @on_inactivate
       end
     end
 
