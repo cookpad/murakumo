@@ -18,11 +18,11 @@ module Murakumo
     end
 
     def notify_active
-      notify('healthy', "#{@name} changed into the health status.")
+      notify('healthy', "#{@name} became healthy :-)")
     end
 
     def notify_inactive
-      notify('unhealthy', "#{@name} changed into the health status.")
+      notify('unhealthy', "#{@name} became unhealthy :-(")
     end
 
     private
