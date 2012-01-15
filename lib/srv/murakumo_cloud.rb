@@ -187,7 +187,7 @@ module Murakumo
       hash['host'] = records.find {|r| r[3] == ORIGIN }[0..2].join(',')
 
       aliases = records.select {|r| r[3] != ORIGIN }.map do |r|
-        [r[1], r[2], (r[3] == MASTER ? 'master' : 'backup'), r[4]].join(',')
+        [r[1], r[2], (r[3] == MASTER ? 'master' : r[3] == SECONDARY ? 'secondary' : 'backup'), r[4]].join(',')
       end
 
       hash['alias'] = aliases unless aliases.empty?
