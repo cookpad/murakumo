@@ -141,14 +141,14 @@ host: $ip_addr, $hostname, 60
 #activity-check:
 #  foo:
 #    start-delay: 60
-#    interval: 5
+#    interval: 10
 #    active: 2    # active threshold count
 #    inactive: 2  # inactive threshold count
 #    on-activate: /foo/bar/zoo.sh   # args: address name status
 #    on-inactivate: /foo/bar/zoo.sh # args: address name status
 #  bar:
 #    start-delay: 60
-#    interval: 5
+#    interval: 10
 #    active: 2    # active threshold count
 #    inactive: 2  # inactive threshold count
 #    on-activate: /foo/bar/zoo.sh   # args: address name status

@@ -15,23 +15,8 @@ module Murakumo
       @options = options
 
       # 各種変数の設定
-      {
-        'interval'    => [  5, 1, 300],
-        'start-delay' => [ 60, 1, 300],
-        'active'      => [  2, 1,  10],
-        'inactive'    => [  2, 1,  10],
-      }.each {|key, vals|
-        defval, min, max = vals
-        value = (options[key] || defval).to_i
-
-        if value < min
-          value = min
-          @logger.warn("activateation-check/#{@name}/#{key} is smaller than #{min}. it was changed into #{min}.")
-        elsif value > max
-          value = max
-          @logger.warn("activation-check/#{@name}/#{key} is larger than #{max}. it was changed into #{max}.")
-        end
-
+      ['interval', 'start-delay', 'active', 'inactive'].each {|key|
+        value = options[key]
         instance_variable_set("@#{key.gsub('-', '_')}", value)
       }
 
