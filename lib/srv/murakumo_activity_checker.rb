@@ -156,8 +156,12 @@ module Murakumo
         WHERE name = ? AND activity = ?
       EOS
 
+      # レコードがなければ非アクティブ
+      return false if records.empty?
+
       # マスタに自IPが含まれているならアクティブ
       masters = records.select {|i| i['priority'] == MASTER }
+
       if masters.any? {|i| i['ip_address'] == @address }
         return true
       end
