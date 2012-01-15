@@ -76,4 +76,4 @@ health-check:
       http_get '/index.html'
 
 # hook of server start
-on-start: '/foo/bar/on-start.sh'
+on-start: /foo/bar/on-start.sh # args: address hostname

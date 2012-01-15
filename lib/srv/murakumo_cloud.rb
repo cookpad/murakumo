@@ -1,6 +1,7 @@
 require 'forwardable'
 require 'rgossip2'
 require 'sqlite3'
+require 'open3'
 
 require 'srv/murakumo_health_checker'
 require 'srv/murakumo_balancer'
@@ -113,7 +114,27 @@ module Murakumo
         checker.start
       end
 
+      # 起動時フックスクリプトの実行
+      if @options[:on_start]
+        exec_start_script(@options[:on_start])
+      end
+
       @gossip.start
+    end
+
+    def exec_start_script(script)
+      @logger.info("starting script is performed: #{script}")
+
+      Open3.popen3("#{script} '#{@address}' '#{@hostname}'") do |stdin, stdout, stderr|
+        out = stdout.read.strip
+        @logger.info(out) unless out.empty?
+
+        err = stderr.read.strip
+        @logger.error(err) unless err.empty?
+      end
+    rescue Exception => e
+      message = (["#{e.class}: #{e.message}"] + (e.backtrace || [])).join("\n\tfrom ")
+      @logger.error("#{@name}: #{message}")
     end
 
     def to_hash
@@ -189,6 +210,10 @@ module Murakumo
 
         if @options.config_file['balancing']
           hash['balancing'] = @options.config_file['balancing']
+        end
+
+        if @options.config_file['on-start']
+          hash['on-start'] = @options.config_file['on-start']
         end
       end # 設定ファイルのみの項目
 

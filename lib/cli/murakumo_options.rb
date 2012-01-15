@@ -318,6 +318,13 @@ def murakumo_parse_args
           balancing_h[reg_dest] = attrs_h
         end
       end # balancing
+
+      # on start
+      if (on_start = options[:on_start])
+        unless File.exist?(on_start)
+          parse_error('on_start script is not found')
+        end
+      end # on start
     end # after
 
     error do |e|
