@@ -79,31 +79,6 @@ alias:
 #on-start: /foo/bar/on-start.sh # args: address hostname
 
 # hook of activation of backup/secondary
-# ---
-# when BACKUP:
-#   if BACKUP is started:
-#     init-status: active   -> on-inactivate
-#                  inactive -> nothing to do
-#   if MASTER became unhealthy or down:
-#     -> on-activate
-#   if MASTER is restored:
-#     -> on-inactivate
-#
-# when MASTER:
-#   if MASTER is started:
-#     init-status: active   -> nothing to do
-#                  inactive -> on-activate
-#   if BACKUP became unhealthy or down:
-#     -> nothing to do
-#   if MASTER became unhealthy: 
-#     -> on-inactivate
-#   if MASTER became down:
-#     -> cannot do anything
-#   if MASTER is restored from down:
-#     -> same as MASTER start
-#   if MASTER is restored from unhealthy:
-#     -> on-activate
-# ---
 #activity-check:
 #  foo:
 #    start-delay: 60
@@ -121,3 +96,29 @@ alias:
 #    inactive: 2  # inactive threshold count
 #    on-activate: /foo/bar/zoo.sh   # args: address name status
 #    on-inactivate: /foo/bar/zoo.sh # args: address name status
+
+## about activity-check
+## ---
+## when BACKUP:
+##   if BACKUP is started:
+##     init-status: active   -> on-inactivate
+##                  inactive -> nothing to do
+##   if MASTER became unhealthy or down:
+##     -> on-activate
+##   if MASTER is restored:
+##     -> on-inactivate
+##
+## when MASTER:
+##   if MASTER is started:
+##     init-status: active   -> nothing to do
+##                  inactive -> on-activate
+##   if BACKUP became unhealthy or down:
+##     -> nothing to do
+##   if MASTER became unhealthy: 
+##     -> on-inactivate
+##   if MASTER became down:
+##     -> cannot do anything
+##   if MASTER is restored from down:
+##     -> same as MASTER start
+##   if MASTER is restored from unhealthy:
+##     -> on-activate
