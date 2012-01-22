@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+$: << File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+require 'optparse'
+
+require 'util/murakumo_ec2_attach_interface'
+
+access_key = nil
+secret_key = nil
+if_id = nil
+dev_idx = nil
+endpoint = nil
+instance_id = nil
+
+ARGV.options do |opt|
+  begin
+    opt.on('-k', '--access-key ACCESS_KEY') {|v| access_key = v }
+    opt.on('-s', '--secret-key SECRET_KEY') {|v| secret_key = v }
+    opt.on('-n', '--network-if-id IF_ID') {|v| if_id = v }
+    opt.on('-d', '--device-index INDEX') {|v| dev_idx = v }
+    opt.on('-r', '--region REGION') {|v| endpoint = v }
+    opt.on('-i', '--instance-id INSTANCE_ID') {|v| instance_id = v }
+    opt.parse!
+
+    access_key ||= (ENV['AMAZON_ACCESS_KEY_ID'] || ENV['AWS_ACCESS_KEY_ID'])
+    secret_key ||= (ENV['AMAZON_SECRET_ACCESS_KEY'] || ENV['AWS_SECRET_ACCESS_KEY'])
+
+    unless access_key and secret_key and if_id
+      puts opt.help
+      exit 1
+    end
+  rescue => e
+    $stderr.puts e
+    exit 1
+  end
+end
+
+Murakumo::Util::ec2_attach_interface(access_key, secret_key, if_id, dev_idx, endpoint, instance_id)
