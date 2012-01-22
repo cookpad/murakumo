@@ -1,18 +1,19 @@
-AMAZON_ACCESS_KEY_ID = '...'
-AMAZON_SECRET_ACCESS_KEY = '...'
+AWS_ACCESS_KEY_ID = '...'
+AWS_SECRET_ACCESS_KEY = '...'
+REGION = 'ap-northeast-1'
 
 # get self ip address
 ip_addr = Murakumo::Util.self_ip_address
 
 # get hostname
-tags = Murakumo::Util.ec2_tags(AMAZON_ACCESS_KEY_ID, AMAZON_SECRET_ACCESS_KEY)
+tags = Murakumo::Util.ec2_tags(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, REGION)
 hostname = tags['Name'] || `curl -s http://169.254.169.254/latest/meta-data/local-hostname`
 
 # rewrite host option
 @options['host'] = "#{ip_addr}, #{hostname}"
 
 # get instances
-ip_addrs = Murakumo::Util::ec2_private_ip_addresses(AMAZON_ACCESS_KEY_ID, AMAZON_SECRET_ACCESS_KEY)
+ip_addrs = Murakumo::Util::ec2_private_ip_addresses(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, REGION)
 
 # rewrite initial-nodes
 nodes = ip_addrs.select {|inst_id, ip_addr, status|
