@@ -15,6 +15,7 @@ Gem::Specification.new do |spec|
   spec.executables << 'murakumo-show-ec2-tags'
   spec.executables << 'murakumo-show-ec2-instances'
   spec.executables << 'murakumo-show-ec2-private-ip-addresses'
+  spec.executables << 'murakumo-attach-ec2-attach-interface'
   spec.add_dependency('rubydns', '~> 0.3.4')
   spec.add_dependency('rgossip2', '>= 0.2.3')
   spec.add_dependency('optopus', '>= 0.2.3')
