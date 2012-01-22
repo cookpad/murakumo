@@ -12,16 +12,21 @@ endpoint = nil
 instance_id = nil
 
 ARGV.options do |opt|
-  opt.on('-k', '--access-key ACCESS_KEY') {|v| access_key = v }
-  opt.on('-s', '--secret-key SECRET_KEY') {|v| secret_key = v }
-  opt.on('-r', '--region REGION') {|v| endpoint = v }
-  opt.parse!
+  begin
+    opt.on('-k', '--access-key ACCESS_KEY') {|v| access_key = v }
+    opt.on('-s', '--secret-key SECRET_KEY') {|v| secret_key = v }
+    opt.on('-r', '--region REGION') {|v| endpoint = v }
+    opt.parse!
 
-  access_key ||= (ENV['AMAZON_ACCESS_KEY_ID'] || ENV['AWS_ACCESS_KEY_ID'])
-  secret_key ||= (ENV['AMAZON_SECRET_ACCESS_KEY'] || ENV['AWS_SECRET_ACCESS_KEY'])
+    access_key ||= (ENV['AMAZON_ACCESS_KEY_ID'] || ENV['AWS_ACCESS_KEY_ID'])
+    secret_key ||= (ENV['AMAZON_SECRET_ACCESS_KEY'] || ENV['AWS_SECRET_ACCESS_KEY'])
 
-  unless access_key and secret_key
-    puts opt.help
+    unless access_key and secret_key
+      puts opt.help
+      exit 1
+    end
+  rescue => e
+    $stderr.puts e
     exit 1
   end
 end
