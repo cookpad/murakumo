@@ -17,8 +17,8 @@ ARGV.options do |opt|
   opt.on('-r', '--region REGION') {|v| endpoint = v }
   opt.parse!
 
-  access_key ||= ENV['AMAZON_ACCESS_KEY_ID']
-  secret_key ||= ENV['AMAZON_SECRET_ACCESS_KEY']
+  access_key ||= (ENV['AMAZON_ACCESS_KEY_ID'] || ENV['AWS_ACCESS_KEY_ID'])
+  secret_key ||= (ENV['AMAZON_SECRET_ACCESS_KEY'] || ENV['AWS_SECRET_ACCESS_KEY'])
 
   unless access_key and secret_key
     puts opt.help
