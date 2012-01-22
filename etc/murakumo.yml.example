@@ -83,15 +83,15 @@ alias:
 #  foo:
 #    start-delay: 60
 #    interval: 10
-#    init-status: undefined # active/inactive/undefined (default: undefined)
+#    #init-status: undefined # active/inactive/undefined (default: undefined)
 #    active: 2    # active threshold count
 #    inactive: 2  # inactive threshold count
-#    on-activate: /foo/bar/zoo.sh   # args: address name status
-#    on-inactivate: /foo/bar/zoo.sh # args: address name status
+#    on-activate: /usr/sbin/attach_if.sh   # args: address name status
+#    #on-inactivate: /foo/bar/zoo.sh       # args: address name status
 #  bar:
 #    start-delay: 60
 #    interval: 10
-#    init-status: undefined # active/inactive/undefined (default: undefined)
+#    #init-status: undefined # active/inactive/undefined (default: undefined)
 #    active: 2    # active threshold count
 #    inactive: 2  # inactive threshold count
 #    on-activate: /usr/sbin/attach_if.sh   # args: address name status
