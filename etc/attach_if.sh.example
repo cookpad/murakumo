@@ -1,0 +1,12 @@
+#!/bin/sh
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+REGION=ap-northeast-1
+IF_ID=eni-...
+
+/usr/bin/murakumo-attach-ec2-attach-interface \
+  -k "$AWS_ACCESS_KEY_ID" -s "$AWS_SECRET_ACCESS_KEY" \
+  -r $REGION -n $IF_ID 2>&1 | logger
+
+exit 0
+
