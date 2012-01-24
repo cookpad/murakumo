@@ -44,7 +44,7 @@ Status: #{status}
         EOS
       end
 
-      @logger.info("sent the notice: #{status}")
+      @logger.info("sent notice: #{status}")
     rescue Exception => e
       message = (["#{e.class}: #{e.message}"] + (e.backtrace || [])).join("\n\tfrom ")
       @logger.error("activity check failed: #{@name}: #{message}")
