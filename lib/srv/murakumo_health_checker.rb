@@ -89,7 +89,7 @@ module Murakumo
     def start
       # 各種変数は初期状態にする
       @alive = true
-      @normal_health = true
+      @normal_health = (@options['init-status'] == ACTIVE)
       @healthy_count = 0
       @unhealthy_count = 0
 
