@@ -108,27 +108,64 @@ module Murakumo
       end
 
       # 宛先をソート
-      dests = (0...records.length).map {|i| [records[i]['ip_address'], i] }.sort_by {|a, b| a }
+      dests = (0...records.length).map {
+        |i| [records[i].values_at('ip_address', 'weight'), i].flatten
+      }.sort_by {|addr, weight, i| addr }
       dests_orig = dests
       dests_orig_len = dests_orig.length
 
-      # 数をそろえる
-      if sources.length < dests.length
-        dests = dests.slice(0, sources.length)
-      elsif sources.length > dests.length
-        dests = dests_orig = dests * (sources.length.to_f / dests.length).ceil
-        dests = dests.slice(0, sources.length)
+      # 按分する
+      dests = arrange_length(sources, dests)
+
+      # 宛先がない場合はとりあえずランダムで
+      if dests.length.zero?
+        @logger.warn('destination is not found')
+        return random(records, max_ip_num)
       end
 
       # 先頭を決めてローテート
-      first_index = sources.zip(dests).index {|s, d| s == @address }
+      first_record = sources.zip(dests).assoc(@address)[1]
+      first_index = dests_orig.index {|i| i[0] == first_record[0] }
 
       # 元の配列に戻す
       dests = (dests_orig + dests_orig).slice(first_index, dests_orig_len)
 
       # 先頭インデックスからレコードを並べ直す
-      yield(records.values_at(*dests.map {|addr, i| i }))
+      yield(records.values_at(*dests.map {|addr, weight, i| i }))
     end # fix_by_src0
+
+    def arrange_length(sources, dests)
+      weights = {}
+      sum = dests.inject(0) {|r, i| r + i[1] }
+
+      # 重みでソースの長さを按分する
+      dests.each do |addr, weight, i|
+        weights[addr] = ((weight.to_f / sum) * sources.length).round
+      end
+
+      # 端数分をそろえる
+      delta = weights.inject(0) {|r, i| r + i[1] } - sources.length
+      key_list = weights.sort_by {|k, v| k }.map {|k, v| k } # 順序は一定に！
+      addval = (delta > 0) ? -1 : 1
+
+      # ローテートしながら端数分を埋める
+      until delta.zero?
+        key = key_list.shift
+        key_list.push(key)
+        weights[key] += addval
+        delta += addval
+      end
+
+      new_dests = []
+
+      dests.each do |addr, weight, i|
+        weights[addr].to_i.times do
+          new_dests << [addr, weight, i]
+        end
+      end
+
+      return new_dests
+    end # arrange_length
 
   end # Balancer
 

@@ -28,7 +28,7 @@ module Murakumo
       host_data.concat [ORIGIN, 0, ACTIVE]
       alias_datas = options[:aliases].map {|r|
         # ヘルスチェックの初期値に合わせて健康状態を設定
-        health_check_conf = (@options[:health_check] || {}).find([]) {|k, v| k =~ /\A#{r[0]}\Z/i }
+        health_check_conf = (@options[:health_check] || {}).find {|k, v| k =~ /\A#{r[0]}\Z/i } || []
         init_status = health_check_conf.fetch(1, {}).fetch('init-status', ACTIVE)
         r + [init_status]
       }
