@@ -154,7 +154,15 @@ module Murakumo
         exec_start_script(@options[:on_start])
       end
 
-      @gossip.start
+      @logger.info("Delay of a gossip start: #{@options[:gossip_start_delay]}")
+
+      Thread.start do
+        # ゴシッププロトコルの開始を遅延
+        sleep @options[:gossip_start_delay]
+
+        @logger.info('Gossip was started')
+        @gossip.start
+      end
     end
 
     def exec_start_script(script)

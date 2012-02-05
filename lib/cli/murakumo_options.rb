@@ -134,6 +134,9 @@ def murakumo_parse_args
     desc 'verifies communication of initial nodes'
     option :ping_init_nodes, '-V', '--ping-init-nodes', :default => false
 
+    desc 'delay of a gossip start'
+    option :gossip_start_delay, '-D', '--gossip-start-delay', :type => Integer, :default => 0
+
     after do |options|
       # auth_key
       if File.exist?(options[:auth_key])
