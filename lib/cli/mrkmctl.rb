@@ -18,6 +18,9 @@ begin
   case cmd
   # 一覧表示
   when :list
+    # アドレスの取得
+    address = there.address
+
     # レコードの取得
     records = there.list_records
 
@@ -48,11 +51,13 @@ begin
       puts 'No macth'
     else
       puts <<-EOF
-IP address       TTL     Priority   Weight  Activity  Hostname
----------------  ------  ---------  ------  --------  ----------
+  IP address       TTL     Priority   Weight  Activity  Hostname
+  ---------------  ------  ---------  ------  --------  ----------
       EOF
       records.each do |r|
-        puts '%-15s  %6d  %-9s  %6s  %-8s  %s' % r.values_at(0, 2, 3, 4, 5, 1)
+        values = r.values_at(0, 2, 3, 4, 5, 1)
+        values.unshift(address == values[0] ? '*' : ' ')
+        puts '%s %-15s  %6d  %-9s  %6s  %-8s  %s' % values
       end
     end
 
