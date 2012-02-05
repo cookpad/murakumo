@@ -82,6 +82,9 @@ max-ip-num: 8
 # verifies communication of initial nodes
 #ping-init-nodes: true
 
+# delay of a gossip start (cli arg: -D)
+#gossip-start-delay: 60
+
 #name-includes: ^app-\d+$, ^db-\d+$
 #name-excludes: 
 #addr-includes: ^10\..*
