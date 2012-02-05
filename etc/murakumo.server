@@ -79,6 +79,9 @@ max-ip-num: 8
 # (another way)
 #init-script: /foo/bar/zoo/murakumo-init.rb
 
+# verifies communication of initial nodes
+#ping-init-nodes: true
+
 #name-includes: ^app-\d+$, ^db-\d+$
 #name-excludes: 
 #addr-includes: ^10\..*
