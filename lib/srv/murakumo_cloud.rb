@@ -35,7 +35,7 @@ module Murakumo
       @logger = options[:logger]
 
       # 名前は小文字に変換
-      datas = ([host_data] + alias_datas).map do |i|
+      @initial_datas = datas = ([host_data] + alias_datas).map do |i|
         name, ttl, priority, weight, activity = i
         name = name.downcase
         [name, ttl, priority, weight, activity]
@@ -47,34 +47,6 @@ module Murakumo
 
       # updateの後にホスト名をセットすること
       @hostname = host_data.first
-
-      # ゴシップオブジェクトを生成
-      @gossip = RGossip2.client({
-        :initial_nodes   => options[:initial_nodes],
-        :address         => @address,
-        :data            => datas,
-        :auth_key        => options[:auth_key],
-        :port            => options[:gossip_port],
-        :node_lifetime   => options[:gossip_node_lifetime],
-        :gossip_interval => options[:gossip_send_interval],
-        :receive_timeout => options[:gossip_receive_timeout],
-        :logger          => @logger,
-        :ping_init_nodes => options[:ping_init_nodes],
-      })
-
-      # ノードの更新をフック
-      @gossip.context.callback_handler = lambda do |act, addr, ts, dt, old_dt|
-        case act
-        when :add, :comeback
-          # 追加・復帰の時は無条件に更新
-          update(addr, dt)
-        when :update
-          # 更新の時はデータが更新されたときのみ更新
-          update(addr, dt) if dt != old_dt
-        when :delete
-          delete(addr)
-        end
-      end
 
       # ヘルスチェック
       @health_checkers = {}
@@ -142,30 +114,63 @@ module Murakumo
     # Control of service
     def_delegators :@gossip, :stop, :clear_dead_list
 
+    # ゴシップオブジェクトを生成
+    def create_gossip
+      @gossip = RGossip2.client({
+        :initial_nodes   => @options[:initial_nodes],
+        :address         => @address,
+        :data            => @initial_datas,
+        :auth_key        => @options[:auth_key],
+        :port            => @options[:gossip_port],
+        :node_lifetime   => @options[:gossip_node_lifetime],
+        :gossip_interval => @options[:gossip_send_interval],
+        :receive_timeout => @options[:gossip_receive_timeout],
+        :logger          => @logger,
+        :ping_init_nodes => @options[:ping_init_nodes],
+      })
+
+      # ノードの更新をフック
+      @gossip.context.callback_handler = lambda do |act, addr, ts, dt, old_dt|
+        case act
+        when :add, :comeback
+          # 追加・復帰の時は無条件に更新
+          update(addr, dt)
+        when :update
+          # 更新の時はデータが更新されたときのみ更新
+          update(addr, dt) if dt != old_dt
+        when :delete
+          delete(addr)
+        end
+      end
+    end
+
     def start
-      # デーモン化すると子プロセスはすぐ死ぬので
-      # このタイミングでヘルスチェックを起動
-      @health_checkers.each do |name, checker|
-        checker.start
-      end
-
-      # アクティビティチェックを起動
-      @activity_checkers.each do |name, checker|
-        checker.start
-      end
-
-      # 起動時フックスクリプトの実行
-      if @options[:on_start]
-        exec_start_script(@options[:on_start])
-      end
-
       @logger.info("Delay of a gossip start: #{@options[:gossip_start_delay]}")
 
       Thread.start do
         # ゴシッププロトコルの開始を遅延
         sleep @options[:gossip_start_delay]
 
-        @logger.info('Gossip was started')
+        @logger.info('Gossip is starting')
+        # ゴシップオブジェクトを生成
+        create_gossip
+
+        # デーモン化すると子プロセスはすぐ死ぬので
+        # このタイミングでヘルスチェックを起動
+        @health_checkers.each do |name, checker|
+          checker.start
+        end
+
+        # アクティビティチェックを起動
+        @activity_checkers.each do |name, checker|
+          checker.start
+        end
+
+        # 起動時フックスクリプトの実行
+        if @options[:on_start]
+          exec_start_script(@options[:on_start])
+        end
+
         @gossip.start
       end
     end
