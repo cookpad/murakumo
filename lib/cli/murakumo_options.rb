@@ -209,6 +209,11 @@ def murakumo_parse_args
         parse_error('same hostname was found')
       end
 
+      # ping init nodes
+      if options[:ping_init_nodes]
+        options[:ping_init_nodes] = !!options[:ping_init_nodes]
+      end
+
       # health check
       if (health_check = options[:health_check])
         health_check.kind_of?(Hash) or parse_error('configuration of a health check is not right')

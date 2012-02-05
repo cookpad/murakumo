@@ -209,6 +209,8 @@ module Murakumo
           'gossip-receive-timeout',
           @gossip.context.receive_timeout
         ]},
+        :ping_init_nodes    => 'ping-init-nodes',
+        :gossip_start_delay => 'gossip-start-delay',
       }
 
       hash = {}
