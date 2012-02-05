@@ -54,7 +54,7 @@ module Murakumo
         :gossip_interval => options[:gossip_send_interval],
         :receive_timeout => options[:gossip_receive_timeout],
         :logger          => @logger,
-        :ping_init_nodes => true,
+        :ping_init_nodes => options[:ping_init_nodes],
       })
 
       # ノードの更新をフック

@@ -131,6 +131,9 @@ def murakumo_parse_args
     desc 'reception timeout of a gossip protocol'
     option :gossip_receive_timeout, '-O', '--gossip-receive-timeout NUM', :type => Integer, :default => 3
 
+    desc 'verifies communication of initial nodes'
+    option :ping_init_nodes, '-V', '--ping-init-nodes', :default => false
+
     after do |options|
       # auth_key
       if File.exist?(options[:auth_key])
