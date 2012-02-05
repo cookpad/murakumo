@@ -26,7 +26,12 @@ module Murakumo
       host_data = options[:host]
       @address = host_data.shift
       host_data.concat [ORIGIN, 0, ACTIVE]
-      alias_datas = options[:aliases].map {|r| r + [ACTIVE] }
+      alias_datas = options[:aliases].map {|r|
+        # ヘルスチェックの初期値に合わせて健康状態を設定
+        health_check_conf = (@options[:health_check] || {}).find([]) {|k, v| k =~ /\A#{r[0]}\Z/i }
+        init_status = health_check_conf.fetch(1, {}).fetch('init-status', ACTIVE)
+        r + [init_status]
+      }
       @logger = options[:logger]
 
       # 名前は小文字に変換
@@ -241,6 +246,16 @@ module Murakumo
       if @options.config_file
         if @options.config_file['health-check']
           hash['health-check'] = @options.config_file['health-check']
+
+          # ちょっと直したい…
+          hash['health-check'].values.each do |h|
+            next unless h['init-status']
+
+            h['init-status'] = {
+              ACTIVE   => 'active' ,
+              INACTIVE => 'inactive',
+            }.fetch(h['init-status'])
+          end
         end
 
         if @options.config_file['activity-check']

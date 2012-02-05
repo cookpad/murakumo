@@ -69,6 +69,7 @@ alias:
 #    timeout: 5
 #    healthy: 2
 #    unhealthy: 2
+#    #init-status: inactive # active/inactive (default: active)
 #    #on-activate: /foo/bar/zoo.sh   # args: address name status
 #    #on-inactivate: /foo/bar/zoo.sh # args: address name status
 #    script: |

@@ -232,6 +232,18 @@ def murakumo_parse_args
             end
           end
 
+          conf['init-status'] ||= 'active'
+
+          unless /\A(active|inactive)\Z/i =~ conf['init-status']
+            parse_error('configuration of a health check is not right', "#{name}/init-status")
+          end
+
+          if conf['init-status'] =~ /\Aactive\Z/i
+            conf['init-status'] = Murakumo::ACTIVE
+          else
+            conf['init-status'] = Murakumo::INACTIVE
+          end
+
           # 各種変数の設定
           {
             'interval'  => [ 5, 1, 300],
