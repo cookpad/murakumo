@@ -17,6 +17,8 @@ module Murakumo
     # クラスメソッドを定義
     class << self
 
+      IN = Resolv::DNS::Resource::IN
+
       def init(options)
         # クラスインスタンス変数を使わないこと
         @@options = options
@@ -66,7 +68,7 @@ module Murakumo
           end
 
           # look up A record
-          match(@@cloud.method(:address_exist?), :A) do |transaction|
+          match(@@cloud.method(:address_exist?), IN::A) do |transaction|
             records = @@cloud.lookup_addresses(transaction.name)
 
             addrs = []
@@ -90,7 +92,7 @@ module Murakumo
           end # match
 
           # look up PTR record
-          match(@@cloud.method(:name_exist?), :PTR) do |transaction|
+          match(@@cloud.method(:name_exist?), IN::PTR) do |transaction|
             name, ttl = @@cloud.lookup_name(transaction.name)
             name += ".#{@@options[:domain]}" if @@options[:domain]
             transaction.respond!(Resolv::DNS::Name.create("#{name}."), :ttl => ttl)
