@@ -30,6 +30,8 @@ module Murakumo
       end
 
       def run
+        EventMachine.epoll
+
         RubyDNS.run_server(:listen => [[:udp, @@options[:dns_address], @@options[:dns_port]]]) do
           # RubyDNS::Serverのコンテキスト
           @logger = @@options[:logger] if @@options[:logger]
