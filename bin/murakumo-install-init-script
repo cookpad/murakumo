@@ -22,7 +22,16 @@ else
   exit 1
 end
 
-bin_dir = ((RbConfig::CONFIG['bindir'] rescue nil) || '').strip
+bin_dir = nil
+
+if defined?(Gem)
+  bin_dir = "#{Gem.dir}/gems"
+elsif defined?(RbConfig)
+  bin_dir = ((RbConfig::CONFIG['bindir'] rescue nil) || '').strip
+else
+  $stderr.puts 'error: bin dir is not found.'
+  exit 1
+end
 
 `cp -i #{gem_dir}/murakumo-#{Murakumo::VERSION}/etc/murakumo.server #{INIT_D_DIR}/murakumo`
 `chmod 755 #{INIT_D_DIR}/murakumo`
