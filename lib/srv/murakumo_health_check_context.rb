@@ -60,23 +60,26 @@ module Murakumo
       end
     end
 
+    # MySQLチェッカー
     begin
-      require 'mysql'
+      require 'mysql2/em'
 
       def mysql_check(user, passwd = nil, port_sock = 3306, host = '127.0.0.1', db = nil)
-        port = nil
-        sock = nil
+        opts = {}
+        opts[:username] = user
+        opts[:password] = passwd if passwd
+        opts[:host]     = host if host
+        opts[:database] = db if db
+        opts[:connect_timeout] = @options['timeout']
 
         if port_sock.kind_of?(Integer)
-          port = port_sock
+          opts[:port] = port_sock
         else
-          sock = port_sock
+          opts[:socket] = port_sock
         end
 
-        my = Mysql.init
-        my.options(Mysql::OPT_CONNECT_TIMEOUT, @options['timeout'])
-        my.connect(host, user, passwd, db, port, sock)
-        !!(my.respond_to?(:ping) ? my.ping : my.stat)
+        my = Mysql2::EM::Client.new(opts)
+        my.ping
       rescue => e
         @logger.debug("#{@name}: #{e.message}")
         return false
@@ -90,24 +93,22 @@ module Murakumo
 
     unless method_defined?(:mysql_check)
       begin
-        require 'mysql2'
+        require 'mysql'
 
         def mysql_check(user, passwd = nil, port_sock = 3306, host = '127.0.0.1', db = nil)
-          opts = {}
-          opts[:username] = user
-          opts[:password] = passwd if passwd
-          opts[:host]     = host if host
-          opts[:database] = db if db
-          opts[:connect_timeout] = @options['timeout']
+          port = nil
+          sock = nil
 
           if port_sock.kind_of?(Integer)
-            opts[:port] = port_sock
+            port = port_sock
           else
-            opts[:socket] = port_sock
+            sock = port_sock
           end
 
-          my = Mysql2::Client.new(opts)
-          my.ping
+          my = Mysql.init
+          my.options(Mysql::OPT_CONNECT_TIMEOUT, @options['timeout'])
+          my.connect(host, user, passwd, db, port, sock)
+          !!(my.respond_to?(:ping) ? my.ping : my.stat)
         rescue => e
           @logger.debug("#{@name}: #{e.message}")
           return false
