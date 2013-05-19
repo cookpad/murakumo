@@ -481,7 +481,7 @@ module Murakumo
 
     # Search of records
 
-    def address_exist?(name)
+    def address_exist?(name, resource_class)
       # includes、excludesのチェック
       if @options[:name_excludes] and @options[:name_excludes].any? {|r| r =~ name }
         return false
@@ -582,7 +582,7 @@ module Murakumo
       @address_records = nil
     end
 
-    def name_exist?(address)
+    def name_exist?(address, resource_class)
       address = x_ip_addr(address)
 
       # includes、excludesのチェック
