@@ -43,6 +43,7 @@ module Murakumo
 
               # ServerクラスをDRuby化
               DRb.start_service("drbunix:#{@@options[:socket]}", @@cloud)
+              File.chmod(0700, @@options[:socket])
               at_exit { FileUtils.rm_f(@@options[:socket]) }
             end
 
