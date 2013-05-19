@@ -1,6 +1,6 @@
 require 'logger'
 require 'optopus'
-require 'resolv'
+require 'rubydns'
 require 'socket'
 
 require 'cli/murakumo_initializer_context'
@@ -145,8 +145,11 @@ def murakumo_parse_args
 
       # resolver
       if options[:resolver]
-        options[:resolver] = options[:resolver].map {|i| i.strip }
-        options[:resolver] = Resolv::DNS.new(:nameserver => options[:resolver])
+        servers = []
+        options[:resolver].each do |addr|
+          [:udp, :tcp].each {|prot| servers << [prot, addr.strip, 53] }
+        end
+        options[:resolver] = RubyDNS::Resolver.new(servers)
       end
 
       # initial nodes
