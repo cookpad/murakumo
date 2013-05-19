@@ -14,7 +14,6 @@ https://github.com/cookpad/murakumo
 * SQLite
 * Ruby1.9 (murakumo version is 0.6.0 or more)
 
-
 == Install
 
   shell> gem install murakumo
