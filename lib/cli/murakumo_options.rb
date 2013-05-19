@@ -107,8 +107,8 @@ def murakumo_parse_args
     desc 'command of daemonize: {start|stop|restart|status}'
     option :daemon, '-d', '--daemon CMD', :type => [:start, :stop, :restart, :status]
 
-    desc 'directory of a pid file'
-    option :pid_dir, '-f', '--pid-dir PATH'
+    desc 'var directory path'
+    option :working_dir, '-w', '--working-dir PATH', :default => '/var'
 
     desc 'output path of a log'
     option :log_path, '-l', '--log-path PATH'

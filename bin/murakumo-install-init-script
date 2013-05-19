@@ -25,7 +25,7 @@ end
 bin_dir = nil
 
 if defined?(Gem)
-  bin_dir = "#{Gem.dir}/gems"
+  bin_dir = Gem.bindir
 elsif defined?(RbConfig)
   bin_dir = ((RbConfig::CONFIG['bindir'] rescue nil) || '').strip
 else

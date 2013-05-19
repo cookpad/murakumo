@@ -25,8 +25,8 @@ module Murakumo
         @@cloud = Cloud.new(options)
       end
 
-      def pid_directory=(path)
-        @@pid_directory = path
+      def working_directory=(path)
+        @@base_directory = path
       end
 
       def run
